@@ -1,0 +1,8 @@
+digraph G {
+  {
+    node [shape=box]
+    poly_mod_3_Phi_n[label="poly_mod_3_Phi_n\n100.00%"]
+    mod3[label="mod3\n72.29%"]
+  }
+  poly_mod_3_Phi_n -> mod3
+}

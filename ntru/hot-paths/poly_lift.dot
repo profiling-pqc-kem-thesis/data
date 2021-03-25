@@ -1,0 +1,12 @@
+digraph G {
+  {
+    node [shape=box]
+    poly_lift[label="poly_lift\n100.00%"]
+    poly_mod_3_Phi_n[label="poly_mod_3_Phi_n\n35.57%"]
+    poly_Z3_to_Zq[label="poly_Z3_to_Zq\n11.50%"]
+    mod3[label="mod3\n25.71%"]
+  }
+  poly_lift -> poly_mod_3_Phi_n
+  poly_lift -> poly_Z3_to_Zq
+  poly_mod_3_Phi_n -> mod3
+}

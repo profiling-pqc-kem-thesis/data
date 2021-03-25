@@ -1,0 +1,12 @@
+digraph G {
+  {
+    node [shape=box]
+    poly_Rq_inv[label="poly_Rq_inv\n100.00%"]
+    poly_R2_inv[label="poly_R2_inv\n45.80%"]
+    poly_R2_inv_to_Rq_inv[label="poly_R2_inv_to_Rq_inv\n54.20%"]
+    poly_Rq_mul[label="poly_Rq_mul\n54.19%"]
+  }
+  poly_Rq_inv -> poly_R2_inv
+  poly_Rq_inv -> poly_R2_inv_to_Rq_inv
+  poly_R2_inv_to_Rq_inv -> poly_Rq_mul
+}
