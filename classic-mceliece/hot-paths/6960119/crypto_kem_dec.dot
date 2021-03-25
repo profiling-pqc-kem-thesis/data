@@ -1,4 +1,5 @@
 digraph "callgraph" {
+  rankdir=LR;
   F5562532e3880 [label="eval\n571 819 680"];
   F5562533590e0 [label="gf_mul\n1 815 787 440"];
   F55625344fcb0 [label="crypto_kem_dec\n2 098 128 712"];

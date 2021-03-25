@@ -1,4 +1,5 @@
 digraph "callgraph" {
+  rankdir=LR;
   F556255f9c120 [label="pk_gen\n301 883 458 908"];
   F556255fb7490 [label="controlbitsfrompermutation\n8 654 724 780"];
   F556255fb7ac0 [label="cbrecursion\n8 628 279 724"];

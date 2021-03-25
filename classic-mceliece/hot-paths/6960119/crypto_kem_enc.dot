@@ -1,4 +1,5 @@
 digraph "callgraph" {
+  rankdir=LR;
   F5562532e2a30 [label="syndrome\n66 545 778"];
   F5562532e6b20 [label="same_mask\n1 656 480"];
   F556253343870 [label="encrypt\n72 126 659"];
