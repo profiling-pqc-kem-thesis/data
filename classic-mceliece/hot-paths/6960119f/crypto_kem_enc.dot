@@ -1,12 +1,12 @@
 digraph "callgraph" {
   rankdir=LR;
-  F556255f5c130 [label="same_mask\n1 656 480"];
-  F556255f5c5a0 [label="encrypt\n72 126 138"];
-  F556255f5c9c0 [label="gen_e\n5 580 342"];
-  F556255f5cef0 [label="syndrome\n66 545 778"];
-  F55625609c090 [label="crypto_kem_enc\n72 220 815"];
-  F556255f5c5a0 -> F556255f5c9c0 [weight=2,label="5 580 342 (1x)"];
-  F556255f5c5a0 -> F556255f5cef0 [weight=2,label="66 545 778 (1x)"];
-  F556255f5c9c0 -> F556255f5c130 [weight=2,label="1 656 480 (103 530x)"];
-  F55625609c090 -> F556255f5c5a0 [weight=2,label="72 126 138 (1x)"];
+  F556255f5c130 [label="same_mask\n2.29%"];
+  F556255f5c5a0 [label="encrypt\n99.87%"];
+  F556255f5c9c0 [label="gen_e\n7.73%"];
+  F556255f5cef0 [label="syndrome\n92.14%"];
+  F55625609c090 [label="crypto_kem_enc\n100.00%"];
+  F556255f5c5a0 -> F556255f5c9c0
+  F556255f5c5a0 -> F556255f5cef0
+  F556255f5c9c0 -> F556255f5c130
+  F55625609c090 -> F556255f5c5a0
 }

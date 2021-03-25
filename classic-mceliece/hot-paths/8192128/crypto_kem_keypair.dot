@@ -1,6 +1,6 @@
 digraph "callgraph" {
   rankdir=LR;
-  F556254a58570 [label="crypto_kem_keypair\n971 822 028 999"];
-  F556254a79570 [label="pk_gen\n957 915 821 235"];
-  F556254a58570 -> F556254a79570 [weight=3,label="957 915 821 235 (7x)"];
+  F556254a58570 [label="crypto_kem_keypair\n100.00%"];
+  F556254a79570 [label="pk_gen\n98.57%"];
+  F556254a58570 -> F556254a79570
 }

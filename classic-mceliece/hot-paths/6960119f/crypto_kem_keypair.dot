@@ -1,15 +1,15 @@
 digraph "callgraph" {
   rankdir=LR;
-  F556255f9c120 [label="pk_gen\n301 883 458 908"];
-  F556255fb7490 [label="controlbitsfrompermutation\n8 654 724 780"];
-  F556255fb7ac0 [label="cbrecursion\n8 628 279 724"];
-  F556255fb87a0 [label="int32_sort\n6 024 207 696"];
-  F556255fb8d70 [label="cbrecursion'2\n6 240 310 328"];
-  F55625609b020 [label="crypto_kem_keypair\n312 347 521 567"];
-  F556255fb7490 -> F556255fb7ac0 [weight=3,label="8 628 279 724 (3x)"];
-  F556255fb7ac0 -> F556255fb8d70 [weight=3,label="6 240 310 328 (6x)"];
-  F556255fb8d70 -> F556255fb87a0 [weight=3,label="6 024 207 696 (98 274x)"];
-  F556255fb8d70 -> F556255fb8d70 [weight=3,label="12 551 255 832 (24 564x)"];
-  F55625609b020 -> F556255f9c120 [weight=3,label="301 883 458 908 (3x)"];
-  F55625609b020 -> F556255fb7490 [weight=3,label="8 654 724 780 (3x)"];
+  F556255f9c120 [label="pk_gen96.65%\n"];
+  F556255fb7490 [label="controlbitsfrompermutation\n2.77%"];
+  F556255fb7ac0 [label="cbrecursion\n2.76%"];
+  F556255fb87a0 [label="int32_sort\n1.93%"];
+  F556255fb8d70 [label="cbrecursion'2\n2.00%"];
+  F55625609b020 [label="crypto_kem_keypair\n100.00%"];
+  F556255fb7490 -> F556255fb7ac0
+  F556255fb7ac0 -> F556255fb8d70
+  F556255fb8d70 -> F556255fb87a0
+  F556255fb8d70 -> F556255fb8d70
+  F55625609b020 -> F556255f9c120
+  F55625609b020 -> F556255fb7490
 }
