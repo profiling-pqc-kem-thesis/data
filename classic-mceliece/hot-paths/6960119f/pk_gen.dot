@@ -1,0 +1,22 @@
+digraph G {
+  {
+    node [shape=box]
+    pk_gen[label="pk_gen\n100.00%"]
+    root[label="root\n0.19%"]
+    gf_mul[label="gf_mul\n0.16%"]
+    uint64_sort[label="uint64_sort\n0.02%"]
+    gf_inv[label="gf_inv\n0.01%"]
+    mov_columns[label="mov_columns\n0.00%"]
+    bitrev[label="bitrev\n0.00%"]
+    memcpy[label="memcpy\n0.00%"]
+    load_gf[label="load_gf\n0.00%"]
+  }
+  pk_gen -> root
+  pk_gen -> gf_mul
+  pk_gen -> uint64_sort
+  pk_gen -> gf_inv
+  pk_gen -> mov_columns
+  pk_gen -> bitrev
+  pk_gen -> memcpy
+  pk_gen -> load_gf
+}
