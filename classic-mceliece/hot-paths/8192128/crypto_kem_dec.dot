@@ -1,0 +1,18 @@
+digraph "callgraph" {
+  F556254a72240 [label="crypto_kem_dec\n2 648 783 325"];
+  F556254a7a7f0 [label="decrypt\n2 648 670 274"];
+  F556254aaf180 [label="synd\n2 371 834 410"];
+  F556254aaf8b0 [label="eval\n723 910 656"];
+  F556254ab0050 [label="gf_mul\n2 298 593 280"];
+  F556254ab0d70 [label="gf_add\n52 428 800"];
+  F556254ab2a60 [label="root\n241 467 408"];
+  F556254a72240 -> F556254a7a7f0 [weight=3,label="2 648 670 274 (1x)"];
+  F556254a7a7f0 -> F556254aaf180 [weight=3,label="2 371 834 410 (2x)"];
+  F556254a7a7f0 -> F556254ab2a60 [weight=2,label="241 467 408 (1x)"];
+  F556254aaf180 -> F556254aaf8b0 [weight=2,label="482 607 104 (16 384x)"];
+  F556254aaf180 -> F556254ab0050 [weight=3,label="1 672 593 408 (8 404 992x)"];
+  F556254aaf180 -> F556254ab0d70 [weight=2,label="41 943 040 (4 194 304x)"];
+  F556254aaf8b0 -> F556254ab0050 [weight=3,label="625 999 872 (3 145 728x)"];
+  F556254aaf8b0 -> F556254ab0d70 [weight=2,label="31 457 280 (3 145 728x)"];
+  F556254ab2a60 -> F556254aaf8b0 [weight=2,label="241 303 552 (8 192x)"];
+}

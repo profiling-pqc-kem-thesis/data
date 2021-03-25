@@ -1,0 +1,11 @@
+digraph "callgraph" {
+  F5562537009a0 [label="gen_e\n7 068 659"];
+  F556253705020 [label="syndrome\n48 800 148"];
+  F556253727530 [label="encrypt\n55 868 825"];
+  F5562537c8f60 [label="crypto_kem_enc\n55 950 195"];
+  F556253854a50 [label="same_mask\n2 097 152"];
+  F5562537009a0 -> F556253854a50 [weight=2,label="2 097 152 (131 072x)"];
+  F556253727530 -> F5562537009a0 [weight=2,label="7 068 659 (1x)"];
+  F556253727530 -> F556253705020 [weight=2,label="48 800 148 (1x)"];
+  F5562537c8f60 -> F556253727530 [weight=2,label="55 868 825 (1x)"];
+}
