@@ -1,0 +1,12 @@
+digraph G {
+  {
+    node [shape=box]
+    root [label="root\n100%"]
+    eval [label="eval\n99.3%"]
+    gf_mul [label="gf_mul\n86.42%"]
+    gf_add [label="gf_add\n4.34%"]
+  }
+  root -> eval
+  eval -> gf_mul
+  eval -> gf_add
+}

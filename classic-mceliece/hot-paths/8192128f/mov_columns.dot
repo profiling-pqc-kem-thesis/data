@@ -1,0 +1,14 @@
+digraph G {
+  {
+    node [shape=box]
+    mov_columns[label="mov_columns\n100.00%"]
+    load8[label="load8\n7.09%"]
+    store8[label="store8\n4.01%"]
+    ctz[label="ctz\n1.79%"]
+    same_mask[label="same_mask\n1.10%"]
+  }
+  mov_columns -> load8
+  mov_columns -> store8
+  mov_columns -> ctz
+  mov_columns -> same_mask
+}

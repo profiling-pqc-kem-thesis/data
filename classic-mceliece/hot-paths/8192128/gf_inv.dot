@@ -1,0 +1,14 @@
+digraph G {
+  {
+    node [shape=box]
+    gf_inv [label="gf_inv\n100%"]
+    gf_frac [label="gf_frac\n99.04%"]
+    gf_sqmul [label="gf_sqmul\n21.75%"]
+    gf_sq2mul [label="gf_sq2mul\n50.79%"]
+    gf_sq2 [label="gf_sq2\n22.46%"]
+  }
+  gf_inv -> gf_frac
+  gf_frac -> gf_sqmul
+  gf_frac -> gf_sq2mul
+  gf_frac -> gf_sq2
+}
