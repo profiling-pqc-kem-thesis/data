@@ -1,4 +1,5 @@
 digraph G {
+  rankdir=LR;
   {
     node [shape=box]
     crypto_kem_enc[label="crypto_kem_enc\n100.00%"]

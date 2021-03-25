@@ -1,5 +1,6 @@
 digraph G {
   {
+    rankdir=LR;
     node [shape=box]
     poly_S3_mul[label="poly_S3_mul\n100.00%"]
     poly_Rq_mul[label="poly_Rq_mul\n99.62%"]

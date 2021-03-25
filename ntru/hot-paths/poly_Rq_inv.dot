@@ -1,4 +1,5 @@
 digraph G {
+  rankdir=LR;
   {
     node [shape=box]
     poly_Rq_inv[label="poly_Rq_inv\n100.00%"]
