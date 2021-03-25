@@ -1,0 +1,24 @@
+digraph G {
+  {
+    node [shape=box]
+    crypto_kem_keypair[label="crypto_kem_keypair\n100.00%"]
+    owcpa_keypair[label="owcpa_keypair\n99.93%"]
+    poly_Rq_mul[label="poly_Rq_mul\n40.07%"]
+    poly_S3_inv[label="poly_S3_inv\n38.93%"]
+    poly_Rq_inv[label="poly_Rq_inv\n45.51%"]
+    poly_R2_inv[label="poly_R2_inv\n20.84%"]
+    mod3[label="mod3\n14.57%"]
+    poly_R2_inv_to_Rq_inv[label="poly_R2_inv_to_Rq_inv\n24.66%"]
+    poly_Sq_mul[label="poly_Sq_mul\n3.09%"]
+  }
+  crypto_kem_keypair -> owcpa_keypair
+  owcpa_keypair -> poly_Rq_mul
+  owcpa_keypair -> poly_S3_inv
+  owcpa_keypair -> poly_Rq_inv
+  owcpa_keypair -> poly_Sq_mul
+  poly_S3_inv -> mod3
+  poly_Rq_inv -> poly_R2_inv
+  poly_Sq_mul -> poly_Rq_mul
+  poly_Rq_inv -> poly_R2_inv_to_Rq_inv
+  poly_R2_inv_to_Rq_inv -> poly_Rq_mul
+}

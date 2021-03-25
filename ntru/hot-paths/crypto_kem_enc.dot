@@ -1,0 +1,16 @@
+digraph G {
+  {
+    node [shape=box]
+    crypto_kem_enc[label="crypto_kem_enc\n100.00%"]
+    randombytes[label="randombytes\n1.76%"]
+    owcpa_enc[label="owcpa_enc\n97.00%"]
+    poly_Rq_mul[label="poly_Rq_mul\n95.35%"]
+    poly_lift[label="poly_lift\n1.01%"]
+    AES256_ECB[label="AES256_ECB\n1.61%"]
+  }
+  crypto_kem_enc -> randombytes
+  crypto_kem_enc -> owcpa_enc
+  randombytes -> AES256_ECB
+  owcpa_enc -> poly_Rq_mul
+  owcpa_enc -> poly_lift
+}

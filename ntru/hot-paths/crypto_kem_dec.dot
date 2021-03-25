@@ -1,0 +1,16 @@
+digraph G {
+  {
+    node [shape=box]
+    crypto_kem_dec[label="crypto_kem_dec\n100.00%"]
+    owcpa_dec[label="owcpa_dec\n99.61%"]
+    poly_Sq_mul[label="poly_Sq_mul\n32.77%"]
+    poly_S3_mul[label="poly_S3_mul\n32.87%"]
+    poly_Rq_mul[label="poly_Rq_mul\n98.23%"]
+  }
+  crypto_kem_dec -> owcpa_dec
+  owcpa_dec -> poly_Sq_mul
+  owcpa_dec -> poly_S3_mul
+  owcpa_dec -> poly_Rq_mul
+  poly_Sq_mul -> poly_Rq_mul
+  poly_S3_mul -> poly_Rq_mul
+}
