@@ -1,4 +1,5 @@
-digraph "callgraph" {
+digraph G {
+  node [shape=box];
   F5562536cfc50 [label="crypto_kem_dec\n100.00%"];
   F5562536f25a0 [label="root\n9.12%"];
   F5562536f68e0 [label="gf_add\n1.98%"];

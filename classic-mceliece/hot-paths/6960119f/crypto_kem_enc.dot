@@ -1,4 +1,4 @@
-digraph "callgraph" {
+digraph G {
   rankdir=LR;
   F556255f5c130 [label="same_mask\n2.29%"];
   F556255f5c5a0 [label="encrypt\n99.87%"];

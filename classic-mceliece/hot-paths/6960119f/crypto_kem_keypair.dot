@@ -1,4 +1,4 @@
-digraph "callgraph" {
+digraph G {
   rankdir=LR;
   F556255f9c120 [label="pk_gen96.65%\n"];
   F556255fb7490 [label="controlbitsfrompermutation\n2.77%"];

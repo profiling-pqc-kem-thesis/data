@@ -1,5 +1,6 @@
-digraph "callgraph" {
+digraph G {
   rankdir=LR;
+  node [shape=box];
   F556254a595b0 [label="crypto_kem_enc\n100.00%"];
   F556254a74c60 [label="encrypt\n99.85%"];
   F556254abd1c0 [label="gen_e\n12.63%"];

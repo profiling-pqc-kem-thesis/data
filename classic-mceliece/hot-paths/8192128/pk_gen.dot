@@ -1,5 +1,4 @@
 digraph G {
-  rankdir=LR;
   {
     node [shape=box]
     pk_gen[label="pk_gen\n100.00%"]
