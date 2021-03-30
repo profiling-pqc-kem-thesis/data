@@ -1,0 +1,34 @@
+===== plain-64bits/lcu6 =====
+iterations: 1000
+average duration: 0.000476ms
+throughput: 2100840.336134/s
+
+===== plain-64bits/lcua =====
+iterations: 1000
+average duration: 0.000486ms
+throughput: 2057613.168724/s
+
+===== plain-64bits/lcua-shld =====
+iterations: 1000
+average duration: 0.000534ms
+throughput: 1872659.176030/s
+
+===== plain-64bits/u6 =====
+iterations: 1000
+average duration: 0.000469ms
+throughput: 2132196.162047/s
+
+===== plain-64bits/ua =====
+iterations: 1000
+average duration: 0.000495ms
+throughput: 2020202.020202/s
+
+===== ref-64bits =====
+iterations: 1000
+average duration: 0.001426ms
+throughput: 701262.272090/s
+
+===== compact =====
+iterations: 1000
+average duration: 0.001430ms
+throughput: 699300.699301/s
