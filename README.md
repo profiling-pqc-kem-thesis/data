@@ -76,9 +76,16 @@ You may then use the command like so:
 ./visualization.sh graph -h
 # View the help for a specific graph
 ./visualization.sh graph example-graph -h
+# Vie the help for a specific table
+./visualization.sh table example-table -h
 
 # Create a graph and show it
 ./visualization.sh graph --database ./my-database.sqlite example-graph --numbers 100
 # Create a graph and store it
 ./visualization.sh graph --database ./my-database.sqlite --output my-graph.png example-graph --numbers 100
+
+# Create a table and print it
+./visualization.sh table --database ./my-database.sqlite example-table --numbers 10
+# Create a table and store it
+./visualization.sh table --database ./my-database.sqlite --output my-table.tex example-table --numbers 10
 ```

@@ -1,14 +1,13 @@
 import sqlite3
 import re
-from matplotlib import pyplot
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 from typing import Any
 
 
-class Graph:
+class Table:
   def __init__(self, options: Namespace) -> None:
-    self.name = "Graph"
-    self.description = "A Graph"
+    self.name = "Table"
+    self.description = "A Table"
     self.options = options
 
   @classmethod
@@ -37,6 +36,5 @@ class Graph:
   def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
     return None
 
-  def generate(self, plot: pyplot, data: Any) -> None:
-    # Do nothing
-    pass
+  def generate(self, data: Any) -> str:
+    return ""
