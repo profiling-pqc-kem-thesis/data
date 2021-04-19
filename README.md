@@ -61,3 +61,24 @@ To build graphs etc. for a specific target, run a command like the following.
 ```sh
 make -C ntru render
 ```
+
+### Generating visualizations
+
+To use the visualizations tool, first ensure that you have Python 3, matplotlib and numpy installed.
+
+You may then use the command like so:
+
+```sh
+# List available visualizations
+./visualization.sh ls
+
+# View the help for graphing
+./visualization.sh graph -h
+# View the help for a specific graph
+./visualization.sh graph example-graph -h
+
+# Create a graph and show it
+./visualization.sh graph --database ./my-database.sqlite example-graph --numbers 100
+# Create a graph and store it
+./visualization.sh graph --database ./my-database.sqlite --output my-graph.png example-graph --numbers 100
+```
