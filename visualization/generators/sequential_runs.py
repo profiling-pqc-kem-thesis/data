@@ -1,7 +1,7 @@
-from os import environ
 import sqlite3
+import itertools
 from argparse import ArgumentParser, Namespace
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from matplotlib import pyplot
 
@@ -20,12 +20,17 @@ class SequentialRunsGraph(Graph):
                       type=str, help="The name of the algorithm to plot")
     parser.add_argument("--algorithm-parameters", default=None, type=str,
                         help="The parameters of the algorithm to plot. Leave empty if there are none")
+    parser.add_argument("--stage", required=True, type=str,
+                        help="The benchmark stage to use")
+    parser.add_argument("--environment", required=True, type=str,
+                        help="The environment to use")
 
   def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
-    parameters = (self.options.algorithm_name, self.options.algorithm_parameters)
+    parameters = (self.options.algorithm_name, self.options.algorithm_parameters, self.options.stage, self.options.environment)
     cursor.execute("""
-      SELECT
+       SELECT
         environment.name,
+        benchmarkRun.runIndex,
         algorithm.name,
         algorithm.parameters,
         algorithm.compiler,
@@ -37,42 +42,60 @@ class SequentialRunsGraph(Graph):
       FROM
         benchmark
         INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
-        INNER JOIN environment ON environment.id = benchmark.environment
+        INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+        INNER JOIN environment ON environment.id = benchmarkRun.environment
         INNER JOIN sequentialBenchmark ON sequentialBenchmark.benchmark = benchmark.id
         INNER JOIN sequentialBenchmarkIteration ON sequentialBenchmarkIteration.sequentialBenchmark = sequentialBenchmark.id
       WHERE
         algorithm.name = ? AND
-        algorithm.parameters = ?
-      ORDER BY benchmark.stage
+        algorithm.parameters = ? AND
+        benchmark.stage = ? AND
+        environment.name = ?
       """, parameters)
     return cursor.fetchall()
 
   def generate(self, plot: pyplot, data: Any) -> None:
-    # [('low-end-laptop', 'mceliece', '6960119f', 'clang', 'ref-optimized', 'keypair', 666.1022, 999, 665165462)]
+    # [('low-end-laptop', 0, 'mceliece', '6960119f', 'clang', 'ref-optimized', 'keypair', 666.1022, 999, 665165462)]
     # clang, ref-optimized: [1, 2, 3, ...]
-    series: Dict[str, Dict[int, int]] = {}
-    baseline_average_duration = 0
+    series: Dict[str, Dict[int, float]] = {}
+    # run_index: average duration
+    baseline_average_durations: Dict[int, int] = {}
+    # label: run_index: iteration: duration
+    sum_per_label: Dict[str, Dict[int, Dict[int, int]]] = {}
+
+    # Find values
     for row in data:
-      benchmark_stage = row[5]
-      # TODO: split into subplots instead
-      if benchmark_stage != "keypair":
-        continue
+      compiler = row[4]
+      features = row[5]
+      run_index = row[1]
+      if compiler == "gcc" and features == "ref":
+        average_duration = row[7]
+        baseline_average_durations[run_index] = average_duration
+      else:
+        label = "{} {}".format(compiler, features)
+        if label not in sum_per_label:
+          sum_per_label[label] = {}
 
-      features = row[4]
-      if features == "ref":
-        average_duration = row[6]
-        baseline_average_duration = average_duration
-        continue
+        if run_index not in sum_per_label[label]:
+          sum_per_label[label][run_index] = {}
 
-      compiler = row[3]
-      label = "{}, {}".format(compiler, features)
-      if label not in series:
-        series[label] = {}
+        iteration = row[8]
+        duration = row[9]
+        sum_per_label[label][run_index][iteration] = duration
 
-      iteration = row[7]
-      duration = row[8]
-      percentual_duration = (duration / 1e6) / baseline_average_duration
-      series[label][iteration] = (1 / percentual_duration) * 100
+    baseline_avarage_duration = sum(baseline_average_durations.values()) / len(baseline_average_durations)
+    print("Baseline runs:", baseline_average_durations)
+    print("Baseline average duration:", baseline_avarage_duration)
+
+    for label in sum_per_label.keys():
+      max_length = max([len(value.items()) for value in sum_per_label[label].values()])
+      for i in range(max_length):
+        relevant_items = [items[i] for items in sum_per_label[label].values() if i in items]
+        duration = sum(relevant_items) / len(relevant_items)
+        percentual_duration = (duration / 1e6) / baseline_avarage_duration
+        if label not in series:
+          series[label] = {}
+        series[label][i] = (1 / percentual_duration)
 
     for key in series.keys():
       # TODO: may be wrong if there are gaps in data as it does not care about the acutal indexing
@@ -80,7 +103,7 @@ class SequentialRunsGraph(Graph):
       plot.plot(values, label=key)
     plot.title("{} {}".format(self.options.algorithm_name,
                               self.options.algorithm_parameters))
-    plot.ylabel("Speedup (%)")
+    plot.ylabel("Speedup")
     plot.xlabel("Iteration")
     plot.legend(title="Compilers", bbox_to_anchor=(
         1.05, 1), loc="upper left", fontsize=8)
@@ -109,34 +132,50 @@ class SequentialRunsTable(Table):
       environment.name,
       algorithm.compiler,
       algorithm.features,
-      sequentialBenchmark.iterations,
-      sequentialBenchmark.averageDuration
+      SUM(sequentialBenchmark.iterations),
+      AVG(sequentialBenchmark.averageDuration)
     FROM
       benchmark
       INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
-      INNER JOIN environment ON environment.id = benchmark.environment
+      INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+      INNER JOIN environment ON environment.id = benchmarkRun.environment
       INNER JOIN sequentialBenchmark ON sequentialBenchmark.benchmark = benchmark.id
     WHERE
-      algorithm.name = ? AND
-      algorithm.parameters = ? AND
-      benchmark.stage = ?
+      algorithm.name = ?
+      AND algorithm.parameters = ?
+      AND benchmark.stage = ?
+    GROUP BY
+      environment.id, algorithm.id
     """, parameters)
     return cursor.fetchall()
 
   def generate(self, data: Any) -> str:
     # [('low-end-laptop', 'gcc', 'ref-optimized', 1000, 142.1472)]
     baselines: Dict[str, int] = {}
-    rows = []
+    environments: Dict[str, List] = {}
     for row in data:
       environment_name = row[0]
-      if environment_name not in baselines:
+      compiler = row[1]
+      features = row[2]
+      if environment_name not in baselines and compiler == "gcc" and features == "ref":
         average_duration = row[4]
         baselines[environment_name] = average_duration
-        rows.append([row[0], row[1], row[2], str(row[3]), "{:.2f}".format(row[4]), "N/A"])
+    for row in data:
+      environment_name = row[0]
+      if environment_name not in environments:
+        environments[environment_name] = []
+      compiler = row[1]
+      features = row[2]
+      if compiler == "gcc" and features == "ref":
+        environments[environment_name].append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "N/A"])
       else:
+        environment_name = row[0]
         baseline_average_duration = baselines[environment_name]
-        speedup = 1 / (row[4] / baseline_average_duration) * 100
-        rows.append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "{:.0f}\\%".format(speedup)])
+        speedup = 1 / (row[4] / baseline_average_duration)
+        environments[environment_name].append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "{:.1f}x".format(speedup)])
+    for environment in environments.values():
+      environment.sort(key=lambda x: 0 if x[5] == "N/A" else float(x[5][:-1]))
+    rows = itertools.chain.from_iterable(environments.values())
 
     return """
     \\begin{{table}}[H]
@@ -150,4 +189,4 @@ class SequentialRunsTable(Table):
             \\bottomrule
         \\end{{tabularx}}
     \\end{{table}}
-    """.format(self.options.algorithm_name, self.options.algorithm_parameters, self.options.stage, "\\\\\n            ".join([" & ".join(columns) for columns in rows]))
+    """.format(self.options.algorithm_name, self.options.algorithm_parameters, self.options.stage, "\\\\\n            ".join([" & ".join(map(lambda x: x.rjust(20, " "), columns)) for columns in rows]))

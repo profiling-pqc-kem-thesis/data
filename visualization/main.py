@@ -2,6 +2,7 @@ import importlib
 import inspect
 import os
 import sqlite3
+import traceback
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Type, cast, Any, Union
 from pathlib import Path
@@ -47,11 +48,17 @@ def fetch_data(instance: Union[Table, Graph], database_path: Path) -> Any:
     connection.close()
   except sqlite3.Error as exception:
     print("error: unable to fetch data")
+    print("exception:")
     print(exception)
+    print("traceback:")
+    traceback.print_exc()
     return
   except Exception as exception:
     print("error: caught unexpected exception when fetching data")
+    print("exception:")
     print(exception)
+    print("traceback:")
+    traceback.print_exc()
     return
   return data
 
@@ -68,7 +75,10 @@ def graph(options: Namespace):
     instance.generate(pyplot, data)
   except Exception as exception:
     print("error: caught unexpected exception when graphing data")
+    print("exception:")
     print(exception)
+    print("traceback:")
+    traceback.print_exc()
     return
 
   output_path = cast(Path, options.output)
@@ -92,7 +102,10 @@ def table(options: Namespace):
     output = inspect.cleandoc(instance.generate(data))
   except Exception as exception:
     print("error: caught unexpected exception when generating table")
+    print("exception:")
     print(exception)
+    print("traceback:")
+    traceback.print_exc()
     return
 
   output_path = cast(Path, options.output)
