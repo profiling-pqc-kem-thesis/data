@@ -48,8 +48,7 @@ class ExampleTable(Table):
     return """
     \\begin{{table}}[H]
     \\centering
-    \\caption{{Implementation configurations}}
-    \\label{{table: method: experiment: phase1: implementation-configurations}}
+    \\caption{{Example Table}}
     \\begin{{tabularx}}{{\\linewidth}}{{l c}}
     \\toprule
     \\thead{{Index}} & \\thead{{Value}}\\\\
