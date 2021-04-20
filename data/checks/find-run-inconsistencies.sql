@@ -9,6 +9,7 @@ SELECT
 FROM
 	algorithm
 	INNER JOIN benchmark ON benchmark.algorithm = algorithm.id
-	INNER JOIN environment ON environment.id = benchmark.environment
+	INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+	INNER JOIN environment ON environment.id = benchmarkRun.environment
 GROUP BY benchmark.algorithm, environment.name
 ORDER BY algorithm.name
