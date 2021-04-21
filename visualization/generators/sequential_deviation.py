@@ -1,13 +1,20 @@
 import sqlite3
-import random
 from argparse import ArgumentParser, Namespace
 from typing import Any, List, Dict
+from statistics import NormalDist
 
 import numpy
 from matplotlib import pyplot
 
 from visualization.graph import Graph
 from visualization.table import Table
+
+
+def calculate_confidence_interval(data, confidence=0.95):
+  dist = NormalDist.from_samples(data)
+  z = NormalDist().inv_cdf((1 + confidence) / 2.)
+  h = dist.stdev * z / ((len(data) - 1) ** .5)
+  return dist.mean - h, dist.mean + h
 
 
 class SequentialDeviationGraph(Graph):
@@ -67,7 +74,7 @@ class SequentialDeviationGraph(Graph):
     plot.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     plot.gcf().axes[0].set_xticklabels(keys)
     plot.title("{} {} ({}) on {}".format(self.options.algorithm_name,
-                              self.options.algorithm_parameters, self.options.stage, self.options.environment))
+                                         self.options.algorithm_parameters, self.options.stage, self.options.environment))
     plot.ylabel("Duration (ms)")
     plot.xlabel("Optimizations")
 
@@ -131,17 +138,20 @@ class SequentialDeviationTable(Table):
       value = values[i]
       standard_deviation = numpy.std(value)
       average = numpy.mean(value)
+      confidence_interval_lower, confidence_interval_upper = calculate_confidence_interval(value)
       compiler, features = key.split(" ")
-      rows.append([self.options.environment, compiler, features, "{:.2f}".format(average), "{:.2f}".format(standard_deviation)])
+      rows.append([compiler, features, "{:.2f}".format(
+          average), "{:.2f}".format(standard_deviation), "{:.2f}".format(confidence_interval_lower), "{:.2f}".format(confidence_interval_upper)])
     return """
     \\begin{{table}}[H]
         \\centering
-        \\caption{{Sequential Runs for {} {} ({}) on {}}}
-        \\begin{{tabularx}}{{\\linewidth}}{{l c c c c}}
+        \\caption{{Duration of {} {} ({}) on {}}}
+        \\begin{{tabularx}}{{\\linewidth}}{{l c c c c c}}
             \\toprule
-            \\thead{{Environment}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Average Duration}} & \\thead{{Standard Deviation}}\\\\
+            \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Mean}} & \\thead{{Standard Deviation}} & \\multicolumn{{2}}{{c}}{{\\thead{{95\\% CI}}}}\\\\
+            & & & & \\thead{{Lower}} & \\thead{{Upper}} \\\\
             \\midrule
-            {} \\\\
+            {}\\\\
             \\bottomrule
         \\end{{tabularx}}
     \\end{{table}}
