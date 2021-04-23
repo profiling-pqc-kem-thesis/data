@@ -22,6 +22,30 @@ class StackSymbolTable(Table):
     parser.add_argument("--symbol", required=True,
                         type=str, help="The symbol to search for")
 
+  @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    cursor.execute("""
+    SELECT
+      algorithm.name,
+      stackBenchmarkSymbol.symbol
+    FROM
+      benchmark
+      INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+      INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+      INNER JOIN environment ON environment.id = benchmarkRun.environment
+      INNER JOIN stackBenchmark ON stackBenchmark.benchmark = benchmark.id
+      INNER JOIN stackBenchmarkSymbol ON stackBenchmarkSymbol.stackBenchmark = stackBenchmark.id
+    GROUP BY
+      algorithm.name,
+      stackBenchmarkSymbol.symbol
+    """)
+    keys = ["algorithm_name", "symbol"]
+    rows = cursor.fetchall()
+    inputs = []
+    for row in rows:
+        inputs.append({keys[i]: value for i, value in enumerate(row)})
+    return inputs
+
   def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
     parameters = (self.options.algorithm_name, self.options.symbol)
     cursor.execute("""
@@ -100,6 +124,23 @@ class StackSymbolChangeTable(Table):
   def populate_argument_parser(parser: ArgumentParser):
     parser.add_argument("--algorithm-name", required=True,
                         type=str, help="The name of the algorithm to include")
+
+  @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    cursor.execute("""
+    SELECT
+      algorithm.name
+    FROM
+      algorithm
+    GROUP BY
+      algorithm.name
+    """)
+    keys = ["algorithm_name"]
+    rows = cursor.fetchall()
+    inputs = []
+    for row in rows:
+        inputs.append({keys[i]: value for i, value in enumerate(row)})
+    return inputs
 
   def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
     parameters = (self.options.algorithm_name,)

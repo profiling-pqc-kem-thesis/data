@@ -34,6 +34,33 @@ class SequentialDeviationGraph(Graph):
     parser.add_argument("--environment", required=True, type=str,
                         help="The environment to use")
 
+  @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    cursor.execute("""
+    SELECT
+      algorithm.name,
+      algorithm.parameters,
+      benchmark.stage,
+      environment.name
+    FROM
+      benchmark
+      INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+      INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+      INNER JOIN environment ON environment.id = benchmarkRun.environment
+      INNER JOIN sequentialBenchmark ON sequentialBenchmark.benchmark = benchmark.id
+    GROUP BY
+      algorithm.name,
+      algorithm.parameters,
+      benchmark.stage,
+      environment.name
+    """)
+    keys = ["algorithm_name", "algorithm_parameters", "stage", "environment"]
+    rows = cursor.fetchall()
+    inputs = []
+    for row in rows:
+        inputs.append({keys[i]: value for i, value in enumerate(row)})
+    return inputs
+
   def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
     parameters = (self.options.algorithm_name, self.options.algorithm_parameters,
                   self.options.stage, self.options.environment)
@@ -95,6 +122,33 @@ class SequentialDeviationTable(Table):
                         help="The benchmark stage to use")
     parser.add_argument("--environment", required=True, type=str,
                         help="The environment to use")
+
+  @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    cursor.execute("""
+    SELECT
+      algorithm.name,
+      algorithm.parameters,
+      benchmark.stage,
+      environment.name
+    FROM
+      benchmark
+      INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+      INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+      INNER JOIN environment ON environment.id = benchmarkRun.environment
+      INNER JOIN sequentialBenchmark ON sequentialBenchmark.benchmark = benchmark.id
+    GROUP BY
+      algorithm.name,
+      algorithm.parameters,
+      benchmark.stage,
+      environment.name
+    """)
+    keys = ["algorithm_name", "algorithm_parameters", "stage", "environment"]
+    rows = cursor.fetchall()
+    inputs = []
+    for row in rows:
+        inputs.append({keys[i]: value for i, value in enumerate(row)})
+    return inputs
 
   def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
     parameters = (self.options.algorithm_name, self.options.algorithm_parameters,

@@ -141,7 +141,8 @@ class ParallelThroughputTable(Table):
         WHERE
             stage IS NOT ""
         GROUP BY
-            algorithm.id,
+            algorithm.name,
+            algorithm.parameters,
             benchmark.stage
         """)
         keys = ["algorithm_name", "algorithm_parameters", "stage"]
