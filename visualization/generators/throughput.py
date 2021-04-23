@@ -4,8 +4,89 @@ from argparse import ArgumentParser, Namespace
 from typing import Any, Dict, List
 from collections import Counter
 
-from visualization.table import Table
+import matplotlib
+from matplotlib import pyplot, ticker
 
+from visualization.table import Table
+from visualization.graph import Graph
+
+
+class ParallelThroughputGraph(Graph):
+  def __init__(self, options: Namespace) -> None:
+    super().__init__(options)
+    self.name = "Parallel Throughput Graph"
+    self.description = "Graph over parallel throughput over threads"
+
+  @staticmethod
+  def populate_argument_parser(parser: ArgumentParser):
+    parser.add_argument("--algorithm-name", required=True,
+                        type=str, help="The name of the algorithm to plot")
+    parser.add_argument("--environment", required=True, type=str,
+                        help="The environment to use")
+
+  def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
+    parameters = (self.options.algorithm_name, self.options.environment)
+    cursor.execute("""
+        SELECT
+            benchmark.stage,
+            algorithm.compiler,
+            algorithm.parameters,
+            parallelBenchmark.numberOfThreads,
+            AVG(throughput)
+        FROM
+            benchmark
+            INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+            INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+            INNER JOIN environment ON environment.id = benchmarkRun.environment
+            INNER JOIN parallelBenchmark ON parallelBenchmark.benchmark = benchmark.id
+        WHERE
+            algorithm.name = ? AND
+            environment.name = ?
+        GROUP BY algorithm.id, environment.id, benchmark.stage, parallelBenchmark.numberOfThreads
+        ORDER BY benchmark.stage DESC
+    """, parameters)
+    return cursor.fetchall()
+
+  def generate(self, plot: pyplot, data: Any) -> None:
+    stages = {row[0]: True for row in data}.keys()
+    compilers = {row[1]: True for row in data}.keys()
+    parameters = {row[2]: True for row in data}.keys()
+    matplotlib.rcParams.update({'figure.autolayout': True})
+    number_of_stages = len(stages)
+    figure, axes_list = plot.subplots(1, number_of_stages)
+    colors = ["#023E8A", "#469990", "#800000", "#f58231"]
+
+    for i, stage in enumerate(stages):
+        axes = axes_list[i]
+        for j, parameter in enumerate(parameters):
+            for k, compiler in enumerate(compilers):
+                specific_data = [[row[0], row[3], row[4]] for row in data if (row[1] == compiler and row[2] == parameter and row[0] == stage)]
+                yy = [row[2] for row in specific_data]
+                axes.plot(range(1, len(yy) + 1), yy,
+                        marker='.', color=colors[j * 2 + k])
+
+        labels = [pow(2, i) for i in range(0, len(yy))]
+        axes.xaxis.set_major_locator(ticker.FixedLocator(range(1, len(labels) + 1)))
+        axes.set_xticklabels(labels=labels, fontsize=6)
+        for tick in axes.yaxis.get_major_ticks():
+            tick.label.set_fontsize(6)
+        axes.set_title(stage, fontsize=7)
+
+    axes_list[0].set_ylabel("Throughput")
+    figure.text(0.5, 0, "Number of Threads", ha="center")
+    legend = []
+    for parameter in parameters:
+        for compiler in compilers:
+            if parameter == "":
+                legend.append(compiler)
+            else:
+                legend.append(compiler + "-" + parameter)
+
+    figure.suptitle("", fontsize=10)
+    figure.legend(legend, bbox_to_anchor=(.5, 1),
+                loc="upper center", fontsize=6, ncol=len(legend))
+
+    return figure
 
 class ParallelThroughputTable(Table):
     def __init__(self, options: Namespace) -> None:
@@ -41,10 +122,10 @@ class ParallelThroughputTable(Table):
             algorithm.name = ? AND
             algorithm.parameters = ? AND
             benchmark.stage = ?
-        GROUP BY 
+        GROUP BY
             environment.name,
             algorithm.compiler,
-            algorithm.features,      
+            algorithm.features,
             parallelBenchmark.numberOfThreads
     """, parameters)
         return cursor.fetchall()
