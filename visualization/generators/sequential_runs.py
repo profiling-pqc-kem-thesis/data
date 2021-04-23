@@ -181,7 +181,7 @@ class SequentialRunsTable(Table):
     \\begin{{table}}[H]
         \\centering
         \\caption{{Sequential Runs for {} {} ({})}}
-        \\begin{{tabularx}}{{\\linewidth}}{{l c c c c c c}}
+        \\begin{{tabularx}}{{\\linewidth}}{{X c c c c c c}}
             \\toprule
             \\thead{{Environment}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Iterations}} & \\thead{{Average duration}} & \\thead{{Speedup}}\\\\
             \\midrule
