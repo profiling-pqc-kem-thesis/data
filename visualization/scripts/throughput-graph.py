@@ -57,7 +57,7 @@ def draw(path: Path, algorithm_name: str, parameters: List[str], environment_nam
         axes.set_title(stage, fontsize=7)
 
     axes_list[0].set_ylabel("Throughput")
-    axes_list[1].set_xlabel("Number of threads")
+    figure.text(0.5, 0, "Number of Threads", ha="center")
     legend = []
     for parameter in parameters:
         for compiler in compilers:
@@ -66,7 +66,7 @@ def draw(path: Path, algorithm_name: str, parameters: List[str], environment_nam
             else:
                 legend.append(compiler + "-" + parameter)
 
-    figure.legend(legend, bbox_to_anchor=(.5, .93), loc="center", fontsize=6, ncol=len(legend))
+    figure.legend(legend, bbox_to_anchor=(.5, 1), loc="upper center", fontsize=6, ncol=len(legend))
 
     return figure
 
@@ -81,25 +81,25 @@ def main(path: Path):
     for environment_name in environment_names:
         title = "NTRU" + " " + "{}-{}".format(*ntru_parameters)
         figure = draw(path, "ntru", ntru_parameters, environment_name)
-        figure.suptitle(title, fontsize=10)
+        figure.suptitle("", fontsize=10)
         figure.savefig(title + " " + environment_name + ".pdf")
         plot.close(figure)
 
         title = "McEliece " + "{}-{}".format(*mceliece_parameters)
         figure = draw(path, "mceliece", mceliece_parameters, environment_name)
-        figure.suptitle(title, fontsize=10)
+        figure.suptitle("", fontsize=10)
         figure.savefig(title + " " + environment_name + ".pdf")
         plot.close(figure)
 
         title = "ECDH " + "{}-{}".format(*ecdh_parameters)
         figure = draw(path, "ecdh", ecdh_parameters, environment_name, stages=["keypair", "exchange"])
-        figure.suptitle(title, fontsize=10)
+        figure.suptitle("", fontsize=10)
         figure.savefig(title + " " + environment_name + ".pdf")
         plot.close(figure)
 
         title = "DH"
         figure = draw(path, "dh", [""], environment_name, stages=["keypair", "exchange"])
-        figure.suptitle(title, fontsize=10)
+        figure.suptitle("", fontsize=10)
         figure.savefig(title + " " + environment_name + ".pdf")
         plot.close(figure)
 
