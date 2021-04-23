@@ -1,13 +1,9 @@
-import sys
 import sqlite3
-import operator
 
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 from collections import Counter
 
-from visualization.graph import Graph
 from visualization.table import Table
 
 
