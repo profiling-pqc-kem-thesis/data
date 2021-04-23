@@ -2,7 +2,7 @@ import sqlite3
 import re
 from matplotlib import pyplot
 from argparse import ArgumentParser, Namespace, _SubParsersAction
-from typing import Any
+from typing import Any, List, Dict
 
 
 class Graph:
@@ -28,6 +28,11 @@ class Graph:
     parser = graph_subparser.add_parser(cls.get_command_name())
     cls.populate_argument_parser(parser)
     return parser
+
+  @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    # Do nothing
+    return []
 
   @staticmethod
   def populate_argument_parser(parser: ArgumentParser):

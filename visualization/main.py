@@ -4,7 +4,7 @@ import os
 import sqlite3
 import traceback
 from argparse import ArgumentParser, Namespace
-from typing import Dict, Type, cast, Any, Union
+from typing import Dict, Type, cast, Any, Union, Tuple
 from pathlib import Path
 
 from visualization.generators import generator_modules
@@ -30,19 +30,31 @@ def initialize_generators():
       elif issubclass(cls, Table):
         table_generators[cls.get_command_name()] = cls
 
-
-def fetch_data(instance: Union[Table, Graph], database_path: Path) -> Any:
+def connect_to_database(database_path: Path) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
   with database_path.open("rb") as file:
     header = file.read(100)
     if len(header) != 100 or header[:16] != b"SQLite format 3\x00":
       print("error: '{}' is not a valid database file".format(database_path))
-      return
+      exit(1)
 
-  data = None
   try:
     connection = sqlite3.connect(
         "file:{}?mode=ro".format(database_path), uri=True)
     cursor = connection.cursor()
+    return (connection, cursor)
+  except sqlite3.Error as exception:
+    print("error: unable to connect to database")
+    print("exception:")
+    print(exception)
+    print("traceback:")
+    traceback.print_exc()
+    exit(1)
+
+def fetch_data(instance: Union[Table, Graph], database_path: Path) -> Any:
+  connection, cursor = connect_to_database(database_path)
+
+  data = None
+  try:
     data = instance.fetch_data(cursor)
     cursor.close()
     connection.close()
@@ -52,14 +64,14 @@ def fetch_data(instance: Union[Table, Graph], database_path: Path) -> Any:
     print(exception)
     print("traceback:")
     traceback.print_exc()
-    return
+    exit(1)
   except Exception as exception:
     print("error: caught unexpected exception when fetching data")
     print("exception:")
     print(exception)
     print("traceback:")
     traceback.print_exc()
-    return
+    exit(1)
   return data
 
 
@@ -75,10 +87,11 @@ def graph(options: Namespace):
     instance.generate(pyplot, data)
   except Exception as exception:
     print("error: caught unexpected exception when graphing data")
-    print("exception:")
-    print(exception)
-    print("traceback:")
-    traceback.print_exc()
+    if options.verbose:
+      print("exception:")
+      print(exception)
+      print("traceback:")
+      traceback.print_exc()
     return
 
   output_path = cast(Path, options.output)
@@ -86,7 +99,7 @@ def graph(options: Namespace):
     pyplot.show()
   else:
     pyplot.savefig(output_path, bbox_inches="tight")
-  pyplot.clf()
+  pyplot.close("all")
 
 
 def table(options: Namespace):
@@ -102,10 +115,11 @@ def table(options: Namespace):
     output = inspect.cleandoc(instance.generate(data))
   except Exception as exception:
     print("error: caught unexpected exception when generating table")
-    print("exception:")
-    print(exception)
-    print("traceback:")
-    traceback.print_exc()
+    if options.verbose:
+      print("exception:")
+      print(exception)
+      print("traceback:")
+      traceback.print_exc()
     return
 
   output_path = cast(Path, options.output)
@@ -126,6 +140,70 @@ def ls(options: Namespace):
     print("{:20s} {:20s} {:20s}".format(
         generator.get_name(), generator.get_description(), "Table"))
 
+def all(options: Namespace):
+  """Run all."""
+  generator = None
+  generator_handler = None
+  if options.name in table_generators:
+    generator = table_generators[options.name]
+    generator_handler = table
+  if options.name in graph_generators:
+    generator = graph_generators[options.name]
+    generator_handler = graph
+  if generator is None:
+    print("No such generator '{}'".format(options.name))
+    exit(1)
+
+  connection, cursor = connect_to_database(options.database)
+  inputs = []
+  try:
+    inputs = generator.fetch_all_inputs(cursor)
+    cursor.close()
+    connection.close()
+  except sqlite3.Error as exception:
+    print("error: unable to fetch all inputs")
+    if options.verbose:
+      print("exception:")
+      print(exception)
+      print("traceback:")
+      traceback.print_exc()
+    exit(1)
+  except Exception as exception:
+    print("error: caught unexpected exception when fetching all inputs")
+    if options.verbose:
+      print("exception:")
+      print(exception)
+      print("traceback:")
+      traceback.print_exc()
+    exit(1)
+
+  for input in inputs:
+    features = "_".join([str(x) for x in input.values()])
+    input["database"] = options.database
+    input["command"] = generator_handler
+    input["verbose"] = options.verbose
+    output_path = cast(Path, options.output)
+    output_path = output_path.joinpath(options.name, features)
+    if generator_handler is graph:
+      input["graph"] = options.name
+      output_path = output_path.with_suffix(".pdf")
+    elif generator_handler is table:
+      input["table"] = options.name
+      output_path = output_path.with_suffix(".tex")
+    input["output"] = output_path
+    generated_options = Namespace(**input)
+    try:
+      print("=== Generating {} ===".format(output_path))
+      output_path.parent.mkdir(parents=True, exist_ok=True)
+      generated_options.command(generated_options)
+    except Exception as exception:
+      if options.verbose:
+        print("error: caught unexpected exception when fetching all inputs")
+        print("exception:")
+        print(exception)
+        print("traceback:")
+        traceback.print_exc()
+      print("generator failed:", output_path)
 
 def parse_file_path(parser, should_exist=False):
   """Parses a file path."""
@@ -149,7 +227,10 @@ def main():
 
   graph_parser = subparsers.add_parser("graph")
   graph_parser.add_argument("-d", "--database", required=True, type=parse_file_path(
-      graph_parser, should_exist=True), help="Path to database file")
+  graph_parser, should_exist=True), help="Path to database file")
+  graph_parser.add_argument("-v", "--verbose", dest="verbose",
+                           action="store_true", help="Log verbose errors")
+  graph_parser.set_defaults(verbose=False)
   graph_parser.add_argument(
       "-o", "--output", type=parse_file_path(graph_parser), help="Path to output file")
 
@@ -161,7 +242,10 @@ def main():
 
   table_parser = subparsers.add_parser("table")
   table_parser.add_argument("-d", "--database", required=True, type=parse_file_path(
-      table_parser, should_exist=True), help="Path to database file")
+  table_parser, should_exist=True), help="Path to database file")
+  table_parser.add_argument("-v", "--verbose", dest="verbose",
+                           action="store_true", help="Log verbose errors")
+  table_parser.set_defaults(verbose=False)
   table_parser.add_argument(
       "-o", "--output", type=parse_file_path(table_parser), help="Path to output file")
 
@@ -170,6 +254,16 @@ def main():
   for generator in table_generators.values():
     generator_parser = generator.create_argument_parser(table_subparser)
     generator_parser.set_defaults(command=table)
+
+  all_parsers = subparsers.add_parser("all")
+  all_parsers.add_argument("-d", "--database", required=True, type=parse_file_path(
+      all_parsers, should_exist=True), help="Path to database file")
+  all_parsers.add_argument(
+      "-o", "--output", required=True, type=parse_file_path(all_parsers), help="Path to output directory")
+  all_parsers.add_argument("-n", "--name", required=True, type=str, help="Name of the table or graph to generate")
+  all_parsers.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Log verbose errors")
+  all_parsers.set_defaults(verbose=False)
+  all_parsers.set_defaults(command=all)
 
   ls_parser = subparsers.add_parser("ls")
   ls_parser.set_defaults(command=ls)

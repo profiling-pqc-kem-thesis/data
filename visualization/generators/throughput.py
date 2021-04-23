@@ -18,6 +18,28 @@ class ParallelThroughputGraph(Graph):
     self.description = "Graph over parallel throughput over threads"
 
   @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    cursor.execute("""
+    SELECT
+        environment.name,
+        algorithm.name
+    FROM
+        benchmark
+        INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+        INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+        INNER JOIN environment ON environment.id = benchmarkRun.environment
+    GROUP BY
+        environment.name,
+        algorithm.name
+    """)
+    keys = ["environment", "algorithm_name"]
+    rows = cursor.fetchall()
+    inputs = []
+    for row in rows:
+        inputs.append({keys[i]: value for i, value in enumerate(row)})
+    return inputs
+
+  @staticmethod
   def populate_argument_parser(parser: ArgumentParser):
     parser.add_argument("--algorithm-name", required=True,
                         type=str, help="The name of the algorithm to plot")
@@ -102,6 +124,32 @@ class ParallelThroughputTable(Table):
                             help="The parameters of the algorithm to plot. Leave empty if there are none")
         parser.add_argument("--stage", required=True, type=str,
                             help="The benchmark stage to use")
+
+    @staticmethod
+    def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+        cursor.execute("""
+        SELECT
+            algorithm.name,
+            algorithm.parameters,
+            benchmark.stage
+        FROM
+            benchmark
+            INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+            INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+            INNER JOIN environment ON environment.id = benchmarkRun.environment
+            INNER JOIN parallelBenchmark ON parallelBenchmark.benchmark = benchmark.id
+        WHERE
+            stage IS NOT ""
+        GROUP BY
+            algorithm.id,
+            benchmark.stage
+        """)
+        keys = ["algorithm_name", "algorithm_parameters", "stage"]
+        rows = cursor.fetchall()
+        inputs = []
+        for row in rows:
+            inputs.append({keys[i]: value for i, value in enumerate(row)})
+        return inputs
 
     def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
         parameters = (self.options.algorithm_name, self.options.algorithm_parameters, self.options.stage)
