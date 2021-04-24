@@ -207,13 +207,13 @@ class ParallelThroughputTable(Table):
                     row += [str(int(value)) for value in dict["gcc"]]
                     row[-1] += "\\\\\n"
                     baseline_average_duration = dict["gcc"][0]
-                    row += ["& N/A"] + [str(int(((value / baseline_average_duration) * 100 - 100))) + "\%" for value in dict["gcc"][1:]]
+                    row += ["& 1.0"] + ["{:.2f}".format(value / baseline_average_duration) for value in dict["gcc"][1:]]
                     row[-1] += "\\\\\n\\cmidrule[0.05em](){3-9}"
                 else:
                     row += ["\n\\multirow{2}{*}{clang}"]
                     row += [str(int(value)) for value in dict["clang"]]
                     row[-1] += "\\\\\n"
-                    throughput_list = [str(int(((value / baseline_average_duration) * 100 - 100))) + "\%" for value in dict["clang"]]
+                    throughput_list = ["{:.2f}".format(value / baseline_average_duration) for value in dict["clang"]]
                     throughput_list[0] = "& " + throughput_list[0]
                     row += throughput_list
             rows.append(row)

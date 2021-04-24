@@ -122,7 +122,7 @@ class SequentialRunsGraph(Graph):
         percentual_duration = (duration / 1e6) / baseline_avarage_duration
         if label not in series:
           series[label] = {}
-        series[label][i] = (1 / percentual_duration)
+        series[label][i] = (1 / percentual_duration - 1.0)
 
     colors = ["#e6194B", "#3cb44b", "#4363d8", "#f58231",
               "#800000", "#9A6324", "#000075", "#469990"]
@@ -220,14 +220,14 @@ class SequentialRunsTable(Table):
       compiler = row[1]
       features = row[2]
       if compiler == "gcc" and features == "ref":
-        environments[environment_name].append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "N/A"])
+        environments[environment_name].append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "0.0"])
       else:
         environment_name = row[0]
         baseline_average_duration = baselines[environment_name]
-        speedup = 1 / (row[4] / baseline_average_duration)
-        environments[environment_name].append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "{:.1f}x".format(speedup)])
+        speedup = 1 / (row[4] / baseline_average_duration) - 1.0
+        environments[environment_name].append([row[0], row[1], row[2], str(row[3]), "{:.2f}ms".format(row[4]), "{:.1f}".format(speedup)])
     for environment in environments.values():
-      environment.sort(key=lambda x: 0 if x[5] == "N/A" else float(x[5][:-1]))
+      environment.sort(key=lambda x: 0 if x[5] == "0.0" else float(x[5][:-1]))
     rows = itertools.chain.from_iterable(environments.values())
 
     return """
@@ -236,7 +236,7 @@ class SequentialRunsTable(Table):
         \\caption{{Sequential Runs for {} {} ({})}}
         \\begin{{tabularx}}{{\\linewidth}}{{X c c c c c c}}
             \\toprule
-            \\thead{{Environment}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Iterations}} & \\thead{{Average duration}} & \\thead{{Speedup}}\\\\
+            \\thead{{Environment}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Iterations}} & \\thead{{Average Duration}} & \\thead{{Speedup}}\\\\
             \\midrule
             {} \\\\
             \\bottomrule

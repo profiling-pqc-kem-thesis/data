@@ -92,12 +92,12 @@ class StackSymbolTable(Table):
       sub_rows = []
       for binary, size in binaries.items():
         if binary == "gcc,ref":
-          rows.append([environment, parameters, "gcc", "ref", "N/A"])
+          rows.append([environment, parameters, "gcc", "ref", "1.0"])
           continue
         compiler, features = binary.split(",")
         sub_rows.append([environment, parameters, compiler,
-                         features, "{:.2f}\\%".format(size/baseline * 100)])
-      sub_rows.sort(key=lambda x: 0 if x[4] == "N/A" else float(x[4][:-2]))
+                         features, "{:.2f}".format(size/baseline)])
+      sub_rows.sort(key=lambda x: 0 if x[4] == "1.0" else float(x[4][:-2]))
       rows += sub_rows
     return """
     \\begin{{table}}[H]
@@ -191,7 +191,7 @@ class StackSymbolChangeTable(Table):
       sub_rows = []
       for binary, symbols in binaries.items():
         if binary == "gcc,ref":
-          rows.append([environment, parameters, "gcc", "ref", "N/A"])
+          rows.append([environment, parameters, "gcc", "ref", "1.0"])
           continue
         differences = []
         for symbol, size in symbols.items():
@@ -199,8 +199,8 @@ class StackSymbolChangeTable(Table):
             differences.append(size / baselines[symbol])
         average = sum(differences) / len(differences)
         compiler, features = binary.split(",")
-        sub_rows.append([environment, parameters, compiler, features, "{:.2f}x".format(average)])
-      sub_rows.sort(key=lambda x: 0 if x[4] == "N/A" else float(x[4][:-1]))
+        sub_rows.append([environment, parameters, compiler, features, "{:.2f}".format(average)])
+      sub_rows.sort(key=lambda x: 0 if x[4] == "1.0" else float(x[4][:-1]))
       rows += sub_rows
     return """
     \\begin{{table}}[H]
@@ -208,7 +208,7 @@ class StackSymbolChangeTable(Table):
         \\caption{{Stack Allocation in {}}}
         \\begin{{tabularx}}{{\\linewidth}}{{X c c c c}}
             \\toprule
-            \\thead{{Environment}} & \\thead{{Parameters}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Average Size}}\\\\
+            \\thead{{Environment}} & \\thead{{Parameters}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Relative Size}}\\\\
             \\midrule
             {}\\\\
             \\bottomrule
