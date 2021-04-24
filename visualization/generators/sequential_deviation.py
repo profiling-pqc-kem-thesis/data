@@ -9,7 +9,6 @@ from matplotlib import pyplot
 from visualization.graph import Graph
 from visualization.table import Table
 
-
 def calculate_confidence_interval(data, confidence=0.95):
   dist = NormalDist.from_samples(data)
   z = NormalDist().inv_cdf((1 + confidence) / 2.)
@@ -100,8 +99,7 @@ class SequentialDeviationGraph(Graph):
     plot.boxplot(values, showfliers=False)
     plot.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     plot.gcf().axes[0].set_xticklabels(keys)
-    plot.title("{} {} ({}) on {}".format(self.options.algorithm_name,
-                                         self.options.algorithm_parameters, self.options.stage, self.options.environment))
+    plot.title("")
     plot.ylabel("Duration (ms)")
     plot.xlabel("Optimizations")
 

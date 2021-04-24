@@ -130,8 +130,7 @@ class SequentialRunsGraph(Graph):
       # TODO: may be wrong if there are gaps in data as it does not care about the acutal indexing
       values = series[key].values()
       plot.plot(values, label=key, color=colors[i])
-    plot.title("{} {}".format(self.options.algorithm_name,
-                              self.options.algorithm_parameters))
+    plot.title("")
     plot.ylabel("Speedup")
     plot.xlabel("Iteration")
     plot.legend(title="Compilers", bbox_to_anchor=(

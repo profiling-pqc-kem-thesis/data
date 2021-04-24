@@ -82,8 +82,7 @@ class MicroDeviationGraph(Graph):
     plot.boxplot(values, showfliers=False)
     plot.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     plot.gcf().axes[0].set_xticklabels(keys)
-    plot.title("{} {} ({}) on {}".format(self.options.algorithm_name,
-                                         self.options.algorithm_parameters, self.options.region, self.options.environment))
+    plot.title("")
     plot.ylabel(self.options.event)
     plot.xlabel("Optimizations")
 
