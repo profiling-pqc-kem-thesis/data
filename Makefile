@@ -27,6 +27,8 @@ parallel-throughput-graph:
 	python3 -m visualization.main all -d data.sqlite --verbose -n parallel-throughput-graph -o build
 parallel-throughput-table:
 	python3 -m visualization.main all -d data.sqlite --verbose -n parallel-throughput-table -o build
+cache-misses-table:
+	python3 -m visualization.main all -d data.sqlite --verbose -n cache-misses-table -o build
 
 clean:
 	$(MAKE) -C ntru/hot-paths clean
