@@ -124,10 +124,12 @@ class SequentialRunsGraph(Graph):
           series[label] = {}
         series[label][i] = (1 / percentual_duration)
 
-    for key in series.keys():
+    colors = ["#e6194B", "#3cb44b", "#4363d8", "#f58231",
+              "#800000", "#9A6324", "#000075", "#469990"]
+    for i, key in enumerate(series.keys()):
       # TODO: may be wrong if there are gaps in data as it does not care about the acutal indexing
       values = series[key].values()
-      plot.plot(values, label=key)
+      plot.plot(values, label=key, color=colors[i])
     plot.title("{} {}".format(self.options.algorithm_name,
                               self.options.algorithm_parameters))
     plot.ylabel("Speedup")

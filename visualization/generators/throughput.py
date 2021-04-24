@@ -76,7 +76,8 @@ class ParallelThroughputGraph(Graph):
     matplotlib.rcParams.update({'figure.autolayout': True})
     number_of_stages = len(stages)
     figure, axes_list = plot.subplots(1, number_of_stages)
-    colors = ["#023E8A", "#469990", "#800000", "#f58231"]
+    colors = ["#e6194B", "#3cb44b", "#4363d8", "#f58231",
+              "#469990", "#800000", "#9A6324", "#000075"]
 
     for i, stage in enumerate(stages):
         axes = axes_list[i]
