@@ -6,7 +6,6 @@ from statistics import NormalDist
 
 from matplotlib import pyplot, ticker
 import numpy
-import copy
 import pandas
 
 from visualization.graph import Graph
@@ -32,7 +31,7 @@ def plot_clustered_stacked(plot, dataframes, names=None):
     axes = plot.subplot(111)
 
     for frame in dataframes:
-        axes = frame.plot(kind="bar", linewidth=0, stacked=True,
+        frame.plot(kind="bar", linewidth=0, stacked=True,
                           ax=axes, legend=False, grid=False, color=colors)
 
     pos = []
@@ -131,9 +130,9 @@ class MicroGraph(Graph):
         series[region][stage][group] = []
       series[region][stage][group].append(value)
 
-    stage_names = list(stage_names)
-    region_names = list(region_names)
-    group_names = list(group_names)
+    stage_names = sorted(list(stage_names))
+    region_names = sorted(list(region_names))
+    group_names = sorted(list(group_names))
 
     # Filter 95% CI
     for region, stages in series.items():
@@ -142,9 +141,9 @@ class MicroGraph(Graph):
           lower, upper = calculate_confidence_interval(values)
           series[region][stage][group] = [x for x in values if (x >= lower and x <= upper)]
 
-    keypair = []
-    encrypt = []
-    decrypt = []
+    keypair = [[] for _ in range(len(region_names))]
+    encrypt = [[] for _ in range(len(region_names))]
+    decrypt = [[] for _ in range(len(region_names))]
 
     for region, stages in series.items():
       temp_keypair = numpy.zeros(shape=len(group_names))
@@ -159,9 +158,9 @@ class MicroGraph(Graph):
             temp_encrypt[group_names.index(group)] = average
           elif stage == "decrypt":
             temp_decrypt[group_names.index(group)] = average
-      keypair.append(temp_keypair)
-      encrypt.append(temp_encrypt)
-      decrypt.append(temp_decrypt)
+      keypair[region_names.index(region)] = temp_keypair
+      encrypt[region_names.index(region)] = temp_encrypt
+      decrypt[region_names.index(region)] = temp_decrypt
 
     plot_clustered_stacked(plot, [
       pandas.DataFrame(keypair, index=region_names, columns=group_names),
