@@ -28,6 +28,12 @@ To build graphs etc. for a specific target, run a command like the following.
 make -C ntru render
 ```
 
+You may also generate visualizations of data gathered from a benchmark. Assuming that `data.sqlite` contains the data from one or more benchmarks, the following command will build all graphs in parallel.
+
+```sh
+make -j4 visualizations
+```
+
 ## Table of contents
 
 [Quickstart](#quickstart)<br/>
