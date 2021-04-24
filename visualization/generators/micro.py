@@ -51,10 +51,11 @@ def plot_clustered_stacked(plot, dataframes, names=None):
     axes.set_title("")
 
     # Draw the zones for the different optimizations
+    _, ymax = axes.get_ylim()
     for i in range(n_ind):
         plot.axvspan(pos[i * 3] - rectangle_width, pos[i * 3 + 2] + rectangle_width, facecolor="#7085c4", alpha=0.2,
                      zorder=-100)
-        axes.text(pos[i * 3] - rectangle_width, 3.5, names[i],
+        axes.text(pos[i * 3] - rectangle_width, ymax * 0.05, names[i],
                   {'ha': 'left', 'va': 'bottom'}, rotation=90, fontsize=6)
 
     plot.legend(reversed(handles[:n_col]), reversed(
