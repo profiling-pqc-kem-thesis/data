@@ -46,13 +46,11 @@ def plot_clustered_stacked(plot, dataframes, names=None):
                 pos.append(rectangle.get_x() + (rectangle_width / 2))
 
     pos = sorted(list(set(pos)))
-    print(len(pos))
     axes.xaxis.set_major_locator(ticker.FixedLocator(pos))
     axes.set_xticklabels(
         labels=["key-pair", "encrypt", "decrypt"] * n_ind, rotation=-60, fontsize=8)
     axes.set_title("")
 
-    print(n_ind)
     # Draw the zones for the different optimizations
     for i in range(n_ind):
         plot.axvspan(pos[i * 3] - rectangle_width, pos[i * 3 + 2] + rectangle_width, facecolor="#7085c4", alpha=0.2,
@@ -105,73 +103,68 @@ class MicroGraph(Graph):
         AND environment.name = ?
         AND microBenchmarkEvent.event = ?
         AND microBenchmarkEvent.value >= 0
-      ORDER BY
-        algorithm.compiler,
-        algorithm.features
+        AND microBenchmarkMeasurement.region NOT IN ("crypto_kem_keypair", "crypto_kem_enc", "crypto_kem_dec")
       """, parameters)
     return cursor.fetchall()
 
   def generate(self, plot: pyplot, data: Any) -> None:
     # [("clang", "avx2-optimized", "keypair", "randombytes", 37295)]
-    # clang,avx2-optimized: keypair: randombytes: [37295]
+    # randombytes: keypair: clang,avx2-optimized: [37295]
     series: Dict[str, Dict[str, Dict[str, List[int]]]] = {}
-    counts: Dict[str, Dict[str, Dict[str, int]]] = {}
     stage_names = set()
     region_names = set()
     group_names = set()
     for row in data:
       compiler, features, stage, region, value = row
       group = ",".join([compiler, features])
-      group_names.add(group)
-      if group not in series:
-        series[group] = {}
-        counts[group] = {}
-      stage_names.add(stage)
-      if stage not in series[group]:
-        series[group][stage] = {}
-        counts[group][stage] = {}
-      region_names.add(region)
-      if region not in series[group][stage]:
-        series[group][stage][region] = []
-        counts[group][stage][region] = 0
-      series[group][stage][region].append(value)
-      counts[group][stage][region] += 1
 
-    parent_regions = ["crypto_kem_keypair", "crypto_kem_enc", "crypto_kem_dec"]
+      region_names.add(region)
+      if region not in series:
+        series[region] = {}
+
+      stage_names.add(stage)
+      if stage not in series[region]:
+        series[region][stage] = {}
+
+      group_names.add(group)
+      if group not in series[region][stage]:
+        series[region][stage][group] = []
+      series[region][stage][group].append(value)
+
     stage_names = list(stage_names)
-    region_names = [region_name for region_name in region_names if region_name not in parent_regions]
+    region_names = list(region_names)
     group_names = list(group_names)
 
     # Filter 95% CI
-    for group, stages in series.items():
-      for stage, regions in stages.items():
-        for region, values in regions.items():
-          if region in parent_regions:
-            continue
+    for region, stages in series.items():
+      for stage, groups in stages.items():
+        for group, values in groups.items():
           lower, upper = calculate_confidence_interval(values)
-          series[group][stage][region] = [x for x in values if (x >= lower and x <= upper)]
+          series[region][stage][group] = [x for x in values if (x >= lower and x <= upper)]
 
-    all_groups_data = [[] for _ in range(len(stage_names))]
-    for group, stages in series.items():
-      compiler, features = group.split(",")
-      group_data = [numpy.zeros(shape=(len(region_names))) for _ in range(len(stage_names))]
-      for stage, regions in stages.items():
-        # Find the number of iterations, based on there being a "parent" region
-        iterations = 0
-        for parent_region in parent_regions:
-          if parent_region in regions:
-            iterations = len(regions[parent_region])
-            break
+    keypair = []
+    encrypt = []
+    decrypt = []
 
-        for region, values in regions.items():
-          if region in parent_regions:
-            continue
-          stage_index = stage_names.index(stage)
-          region_index = region_names.index(region)
-          occurances_per_iteration = len(series[group][stage][region]) / iterations
-          average = numpy.mean(values)
-          group_data[stage_index][region_index] = average * occurances_per_iteration
-      for i in range(len(stage_names)):
-        all_groups_data[i].append(group_data[i])
+    for region, stages in series.items():
+      temp_keypair = numpy.zeros(shape=len(group_names))
+      temp_encrypt = numpy.zeros(shape=len(group_names))
+      temp_decrypt = numpy.zeros(shape=len(group_names))
+      for stage, groups in stages.items():
+        for group, values in groups.items():
+          average = numpy.mean(values) if len(values) > 0 else 0
+          if stage == "keypair":
+            temp_keypair[group_names.index(group)] = average
+          elif stage == "encrypt":
+            temp_encrypt[group_names.index(group)] = average
+          elif stage == "decrypt":
+            temp_decrypt[group_names.index(group)] = average
+      keypair.append(temp_keypair)
+      encrypt.append(temp_encrypt)
+      decrypt.append(temp_decrypt)
 
-    plot_clustered_stacked(plot, [pandas.DataFrame(x, index=group_names, columns=region_names) for x in all_groups_data], names=group_names)
+    plot_clustered_stacked(plot, [
+      pandas.DataFrame(keypair, index=region_names, columns=group_names),
+      pandas.DataFrame(encrypt, index=region_names, columns=group_names),
+      pandas.DataFrame(decrypt, index=region_names, columns=group_names)
+    ], names=region_names)
