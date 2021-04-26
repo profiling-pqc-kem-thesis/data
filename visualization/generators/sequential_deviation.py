@@ -200,7 +200,7 @@ class SequentialDeviationTable(Table):
         \\caption{{Duration of {} {} ({}) on {}}}
         \\begin{{tabularx}}{{\\linewidth}}{{l X c c c c}}
             \\toprule
-            \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Mean}} & \\thead{{Standard\\Deviation}} & \\multicolumn{{2}}{{c}}{{\\thead{{95\\% CI}}}}\\\\
+            \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Mean}} & \\thead{{Standard\\\\Deviation}} & \\multicolumn{{2}}{{c}}{{\\thead{{95\\% CI}}}}\\\\
             & & & & \\thead{{Lower}} & \\thead{{Upper}} \\\\
             \\midrule
             {}\\\\

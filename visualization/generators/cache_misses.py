@@ -120,7 +120,7 @@ class CacheMissesTable(Table):
         \\caption{{Cache Misses in {} {} in {}}}
         \\begin{{tabularx}}{{\\linewidth}}{{l c c c c c c}}
             \\toprule
-            \\thead{{Environment}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Mean}} & \\thead{{Standard\\Deviation}} & \\multicolumn{{2}}{{c}}{{\\thead{{95\\% CI}}}}\\\\
+            \\thead{{Environment}} & \\thead{{Compiler}} & \\thead{{Flags}} & \\thead{{Mean}} & \\thead{{Standard\\\\Deviation}} & \\multicolumn{{2}}{{c}}{{\\thead{{95\\% CI}}}}\\\\
             & & & & & \\thead{{Lower}} & \\thead{{Upper}} \\\\
             \\midrule
             {}\\\\
