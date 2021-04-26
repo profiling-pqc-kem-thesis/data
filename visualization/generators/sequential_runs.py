@@ -1,5 +1,6 @@
 import sqlite3
 import itertools
+import json
 from argparse import ArgumentParser, Namespace
 from typing import Any, Dict, List
 
@@ -243,3 +244,129 @@ class SequentialRunsTable(Table):
         \\end{{tabularx}}
     \\end{{table}}
     """.format(self.options.algorithm_name, self.options.algorithm_parameters, self.options.stage, "\\\\\n            ".join([" & ".join(map(lambda x: x.rjust(20, " "), columns)) for columns in rows]))
+
+
+class SequentialTable(Table):
+  def __init__(self, options: Namespace) -> None:
+    super().__init__(options)
+    self.name = "Sequential Table"
+    self.description = "Table over sequential runs"
+
+  @staticmethod
+  def populate_argument_parser(parser: ArgumentParser):
+    parser.add_argument("--algorithm-name", required=True,
+                        type=str, help="The name of the algorithm to plot")
+    parser.add_argument("--algorithm-parameters", default=None, type=str,
+                        help="The parameters of the algorithm to plot. Leave empty if there are none")
+
+  @staticmethod
+  def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+    cursor.execute("""
+    SELECT
+      algorithm.name,
+      algorithm.parameters
+    FROM
+      benchmark
+      INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+      INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+      INNER JOIN environment ON environment.id = benchmarkRun.environment
+      INNER JOIN sequentialBenchmark ON sequentialBenchmark.benchmark = benchmark.id
+    GROUP BY
+      algorithm.name,
+      algorithm.parameters
+    """)
+    keys = ["algorithm_name", "algorithm_parameters"]
+    rows = cursor.fetchall()
+    inputs = []
+    for row in rows:
+        inputs.append({keys[i]: value for i, value in enumerate(row)})
+    return inputs
+
+  def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
+    parameters = (self.options.algorithm_name,
+                  self.options.algorithm_parameters, )
+    cursor.execute("""
+    SELECT
+      environment.name,
+      algorithm.compiler,
+      algorithm.features,
+      benchmark.stage,
+      AVG(sequentialBenchmark.averageDuration)
+    FROM
+      benchmark
+      INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+      INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+      INNER JOIN environment ON environment.id = benchmarkRun.environment
+      INNER JOIN sequentialBenchmark ON sequentialBenchmark.benchmark = benchmark.id
+    WHERE
+      algorithm.name = ?
+      AND algorithm.parameters = ?
+    GROUP BY
+      environment.id, algorithm.id, benchmark.stage
+    """, parameters)
+    return cursor.fetchall()
+
+  def generate(self, data: Any) -> str:
+    # [('low-end-laptop', 'gcc', 'ref-optimized', 'keypair', 142.1472)]
+    baselines: Dict[str, int] = {}
+    environments: Dict[str, Dict] = {}
+    for row in data:
+      environment_name = row[0]
+      compiler = row[1]
+      features = row[2]
+      if environment_name not in baselines and compiler == "gcc" and features == "ref":
+        average_duration = row[4]
+        baselines[environment_name] = average_duration
+
+    index = ["keypair", "encrypt", "decrypt"]
+    for row in data:
+      environment_name = row[0]
+      compiler = row[1]
+      features = row[2]
+      segment = row[3]
+
+      if environment_name not in environments:
+        environments[environment_name] = {compiler: {}}
+      elif compiler not in environments[environment_name]:
+        environments[environment_name][compiler] = {}
+
+      if features not in environments[environment_name][compiler]:
+        environments[environment_name][compiler][features] = [""] * 6
+      environments[environment_name][compiler][features][index.index(segment)] = "{:.2f}ms".format(row[4])
+      if compiler == "gcc" and features == "ref":
+        environments[environment_name]["gcc"]["ref"][3 + index.index(segment)] = "0.0"
+      else:
+        baseline_average_duration = baselines[environment_name]
+        speedup = 1 / (row[4] / baseline_average_duration) - 1.0
+        environments[environment_name][compiler][features][3 + index.index(segment)] = "{:.1f}".format(speedup)
+
+    rows = []
+    for key in environments:
+      rows.append("\\multirowcell{{{}}}{{{}}}".format(len(environments[key]["gcc"].keys()) + len(environments[key]["clang"].keys()) + 2, key.replace(" ", "\\\\ ")))
+      rows.append("& \\textbf{gcc} & & & & & \\\\")
+      for features in environments[key]["gcc"]:
+        rows.append("& " + features + " & " + " & ".join(environments[key]["gcc"][features]))
+        rows[-1] += "\\\\"
+      rows.append("& \\textbf{clang} & & & & & \\\\")
+      for features in environments[key]["clang"]:
+        rows.append("& " + features + " & " + " & ".join(environments[key]["clang"][features]))
+        rows[-1] += "\\\\"
+      rows.append("\\midrule")
+    del rows[-1]
+
+    return """
+  \\begin{{table}}[H]
+      \\centering
+      \\footnotesize
+      \\caption{{Sequential Table for {} {}}}
+      \\begin{{tabularx}}{{\\linewidth}}{{l X c c c c c c}}
+          \\toprule
+          \\thead{{Environment}} & \\thead{{Flags}} & \multicolumn{{3}}{{c}}{{\\thead{{Average Duration}}}} & \multicolumn{{3}}{{c}}{{\\thead{{Speedup}}}}\\\\
+          & & keypair & encrypt & decrypt & keypair & encrypt & decrypt \\\\
+          \\midrule
+          {}
+          \\bottomrule
+      \\end{{tabularx}}
+  \\end{{table}}
+  """.format(self.options.algorithm_name, self.options.algorithm_parameters, "\n            ".join(rows))
+

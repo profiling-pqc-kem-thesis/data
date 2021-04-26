@@ -9,8 +9,10 @@ render:
 	$(MAKE) -C ntru/hot-paths
 	$(MAKE) -C classic-mceliece/hot-paths
 
-visualizations: sequential-deviation-graph sequential-deviation-table sequential-runs-graph sequential-runs-table stack-symbol-change-table stack-symbol-table parallel-throughput-graph parallel-throughput-table
+visualizations: sequential-table sequential-deviation-graph sequential-deviation-table sequential-runs-graph sequential-runs-table stack-symbol-change-table stack-symbol-table parallel-throughput-graph parallel-throughput-table
 
+sequential-table:
+	python3 -m visualization.main all -d data.sqlite --verbose -n sequential-table -o build
 sequential-deviation-graph:
 	python3 -m visualization.main all -d data.sqlite --verbose -n sequential-deviation-graph -o build
 sequential-deviation-table:
