@@ -314,16 +314,17 @@ class SequentialTable(Table):
       environment_name = row[0]
       compiler = row[1]
       features = row[2]
-      if environment_name not in baselines and compiler == "gcc" and features == "ref":
+      stage = row[3]
+      if environment_name + stage not in baselines and compiler == "gcc" and features == "ref":
         average_duration = row[4]
-        baselines[environment_name] = average_duration
+        baselines[environment_name + stage] = average_duration
 
     index = ["keypair", "encrypt", "decrypt"]
     for row in data:
       environment_name = row[0]
       compiler = row[1]
       features = row[2]
-      segment = row[3]
+      stage = row[3]
 
       if environment_name not in environments:
         environments[environment_name] = {compiler: {}}
@@ -332,24 +333,25 @@ class SequentialTable(Table):
 
       if features not in environments[environment_name][compiler]:
         environments[environment_name][compiler][features] = [""] * 6
-      environments[environment_name][compiler][features][index.index(segment)] = "{:.2f}ms".format(row[4])
+      environments[environment_name][compiler][features][index.index(stage)] = "{:.3f}".format(row[4])
       if compiler == "gcc" and features == "ref":
-        environments[environment_name]["gcc"]["ref"][3 + index.index(segment)] = "0.0"
+        environments[environment_name]["gcc"]["ref"][3 + index.index(stage)] = "0.0"
       else:
-        baseline_average_duration = baselines[environment_name]
+        baseline_average_duration = baselines[environment_name + stage]
         speedup = 1 / (row[4] / baseline_average_duration) - 1.0
-        environments[environment_name][compiler][features][3 + index.index(segment)] = "{:.1f}".format(speedup)
+        environments[environment_name][compiler][features][3 + index.index(stage)] = "{:.1f}".format(speedup)
 
+    sort_order = ["ref", "ref-optimized", "avx2", "avx2-optimized"]
     rows = []
-    for key in environments:
-      rows.append("\\multirowcell{{{}}}{{{}}}".format(len(environments[key]["gcc"].keys()) + len(environments[key]["clang"].keys()) + 2, key.replace(" ", "\\\\ ")))
+    for environment_name in environments:
+      rows.append("\\multirowcell{{{}}}{{{}}}".format(len(environments[environment_name]["gcc"].keys()) + len(environments[environment_name]["clang"].keys()) + 2, environment_name.replace(" ", "\\\\ ")))
       rows.append("& \\textbf{gcc} & & & & & \\\\")
-      for features in environments[key]["gcc"]:
-        rows.append("& " + features + " & " + " & ".join(environments[key]["gcc"][features]))
+      for features in sorted(environments[environment_name]["gcc"], key=lambda x: sort_order.index(x)):
+        rows.append("& " + features + " & " + " & ".join(environments[environment_name]["gcc"][features]))
         rows[-1] += "\\\\"
       rows.append("& \\textbf{clang} & & & & & \\\\")
-      for features in environments[key]["clang"]:
-        rows.append("& " + features + " & " + " & ".join(environments[key]["clang"][features]))
+      for features in sorted(environments[environment_name]["clang"], key=lambda x: sort_order.index(x)):
+        rows.append("& " + features + " & " + " & ".join(environments[environment_name]["clang"][features]))
         rows[-1] += "\\\\"
       rows.append("\\midrule")
     del rows[-1]
@@ -359,9 +361,9 @@ class SequentialTable(Table):
       \\centering
       \\footnotesize
       \\caption{{Sequential Table for {} {}}}
-      \\begin{{tabularx}}{{\\linewidth}}{{l X c c c c c c}}
+      \\begin{{tabularx}}{{\\linewidth}}{{l l c c c c c c}}
           \\toprule
-          \\thead{{Environment}} & \\thead{{Flags}} & \multicolumn{{3}}{{c}}{{\\thead{{Average Duration}}}} & \multicolumn{{3}}{{c}}{{\\thead{{Speedup}}}}\\\\
+          \\thead{{Environment}} & \\thead{{Flags}} & \multicolumn{{3}}{{c}}{{\\thead{{Average Duration (ms)}}}} & \multicolumn{{3}}{{c}}{{\\thead{{Speedup}}}}\\\\
           & & keypair & encrypt & decrypt & keypair & encrypt & decrypt \\\\
           \\midrule
           {}

@@ -111,6 +111,7 @@ class ParallelThroughputGraph(Graph):
 
     return figure
 
+
 class ParallelThroughputTable(Table):
     def __init__(self, options: Namespace) -> None:
         super().__init__(options)
@@ -183,10 +184,12 @@ class ParallelThroughputTable(Table):
     def generate(self, data: Any) -> str:
         # build a easy to parse data structure
         data_structure: Dict[str, List[Dict[str, List[float]]]] = {}
+        data_features: Dict[str, str] = {}
         environment_name = ""
         for row in data:
             compiler = row[1]
             if environment_name == row[0]:
+                data_features[environment_name] = row[2]
                 index = next((i for i, item in enumerate(data_structure[environment_name]) if compiler in item.keys()), None)
                 if index is not None:
                     data_structure[environment_name][index][compiler].append(row[4])
@@ -200,7 +203,7 @@ class ParallelThroughputTable(Table):
         rows = []
         baseline_average_duration = 0
         for key in data_structure:
-            row = ["\\midrule\n\\multirowcell{{4}}{{{}}}".format(key.replace(" ", "\\\\ "))]
+            row = ["\\midrule\n\\multirowcell{{4}}{{{}}}".format(key.replace(" ", "\\\\ ") + " \\footref{{{}}}".format(data_features[key]))]
             for dict in reversed(data_structure[key]):
                 if "gcc" in dict:
                     row += ["\n\\multirow{2}{*}{gcc}"]
@@ -235,5 +238,9 @@ class ParallelThroughputTable(Table):
             \\bottomrule
         \\end{{tabularx}}
     \\end{{table}}
+    \\addtocounter{{footnote}}{{1}}
+    \\footnotetext{{\label{{ref-optimized}}ref-optimized}}
+    \\addtocounter{{footnote}}{{1}}
+    \\footnotetext{{\label{{avx2-optimized}}avx2-optimized}}
     """.format(self.options.algorithm_name, self.options.algorithm_parameters, self.options.stage, len(labels), " & ".join(labels),
                "\\\\\n            ".join([" & ".join(columns) for columns in rows]))
