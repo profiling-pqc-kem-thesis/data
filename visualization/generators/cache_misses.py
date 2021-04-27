@@ -47,6 +47,7 @@ class CacheMissesTable(Table):
     WHERE
       microBenchmarkMeasurement.region IN ("crypto_kem_keypair", "crypto_kem_enc", "crypto_kem_dec", "crypto_dh_keypair", "crpyto_dh_enc")
       AND microBenchmarkEvent.event = "cache-misses"
+      AND microBenchmarkEvent.value >= 0
     GROUP BY
       algorithm.name,
       algorithm.parameters,
@@ -117,6 +118,7 @@ class CacheMissesTable(Table):
     return """
     \\begin{{table}}[H]
         \\centering
+        \\small
         \\caption{{Cache Misses in {} {} in {}}}
         \\begin{{tabularx}}{{\\linewidth}}{{l c c c c c c}}
             \\toprule
