@@ -18,8 +18,8 @@ class HeapAllocationTable(Table):
   def populate_argument_parser(parser: ArgumentParser):
     parser.add_argument("--algorithm-name", required=True,
                         type=str, help="The name of the algorithm to include")
-    parser.add_argument("--algorithm-parameters", required=True,
-                        type=str, help="The parameters of the algorithm to include")
+    parser.add_argument("--algorithm-parameters",
+                        type=str, default="", help="The parameters of the algorithm to include")
     parser.add_argument("--trace", required=True,
                         type=str, help="Part of a trace to search for")
 
