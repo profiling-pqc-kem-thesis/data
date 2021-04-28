@@ -9,7 +9,7 @@ render:
 	$(MAKE) -C ntru/hot-paths
 	$(MAKE) -C classic-mceliece/hot-paths
 
-visualizations: sequential-table sequential-deviation-graph sequential-deviation-table sequential-runs-graph sequential-runs-table stack-symbol-change-table stack-symbol-table parallel-throughput-graph parallel-throughput-table cache-misses-table
+visualizations: sequential-table sequential-deviation-graph sequential-deviation-table sequential-runs-graph sequential-runs-table stack-symbol-change-table stack-symbol-table parallel-throughput-graph parallel-throughput-table cache-misses-table cpu-cycles-table
 
 sequential-table:
 	python3 -m visualization.main all -d data.sqlite --verbose -n sequential-table -o build
@@ -31,6 +31,8 @@ parallel-throughput-table:
 	python3 -m visualization.main all -d data.sqlite --verbose -n parallel-throughput-table -o build
 cache-misses-table:
 	python3 -m visualization.main all -d data.sqlite --verbose -n cache-misses-table -o build
+cpu-cycles-table:
+	python3 -m visualization.main all -d data.sqlite --verbose -n cpu-cycles-table -o build
 
 clean:
 	$(MAKE) -C ntru/hot-paths clean
