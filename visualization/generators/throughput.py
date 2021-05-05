@@ -94,9 +94,9 @@ class ParallelThroughputGraph(Graph):
 
         labels = [pow(2, i) for i in range(0, len(yy))]
         axes.xaxis.set_major_locator(ticker.FixedLocator(range(1, len(labels) + 1)))
-        axes.set_xticklabels(labels=labels, fontsize=6)
+        axes.set_xticklabels(labels=labels, fontsize=7)
         for tick in axes.yaxis.get_major_ticks():
-            tick.label.set_fontsize(6)
+            tick.label.set_fontsize(7)
         axes.set_title(stage, fontsize=7)
 
     axes_list[0].set_ylabel("Throughput")
@@ -111,7 +111,7 @@ class ParallelThroughputGraph(Graph):
 
     figure.suptitle("", fontsize=10)
     figure.legend(legend, bbox_to_anchor=(.5, 1),
-                loc="upper center", fontsize=6, ncol=len(legend))
+                loc="upper center", fontsize=7, ncol=len(legend))
 
     return figure
 
