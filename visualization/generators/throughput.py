@@ -76,6 +76,10 @@ class ParallelThroughputGraph(Graph):
     matplotlib.rcParams.update({'figure.autolayout': True})
     number_of_stages = len(stages)
     figure, axes_list = plot.subplots(1, number_of_stages)
+    # Change the height to be three fourths that of the original height as
+    # it becomes very narrow otherwise
+    figure_width, figure_height = figure.get_size_inches()
+    figure.set_size_inches(figure_width, figure_height * 0.75)
     colors = ["#e6194B", "#3cb44b", "#4363d8", "#f58231",
               "#469990", "#800000", "#9A6324", "#000075"]
 
