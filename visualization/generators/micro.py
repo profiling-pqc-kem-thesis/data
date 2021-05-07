@@ -33,21 +33,38 @@ def plot_clustered_stacked(plot, dataframes: Dict[str, Any]):
     for key in dataframes:
         width_ratios.append(len(dataframes[key].index) * len(dataframes[key].columns))
 
-    figure, axes_list = plot.subplots(1, number_of_dataframes, gridspec_kw={'width_ratios': width_ratios})
+    figure, axes_list = plot.subplots(2, number_of_dataframes, gridspec_kw={'width_ratios': width_ratios})
     figure_width, figure_height = figure.get_size_inches()
     figure.set_size_inches(figure_width * 3, figure_height * 2)
+
+    d = .5  # proportion of vertical to horizontal extent of the slanted line
+    #kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
+    #              linestyle="none", color='k', mec='k', mew=1, clip_on=False)
 
     for i, key in enumerate(dataframes):
         colors = []
         for column in dataframes[key].columns:
             colors.append(colors_dict[column])
-        dataframes[key].plot(kind="bar", linewidth=0, stacked=False, ax=axes_list[i], legend=False, grid=False,
-                             color=colors)
-        axes_list[i].set_title(key, fontsize=7)
+        dataframes[key].plot(kind="bar", linewidth=0, stacked=False, ax=axes_list[0][i], legend=False, grid=False, color=colors)
+        dataframes[key].plot(kind="bar", linewidth=0, stacked=False, ax=axes_list[1][i], legend=False, grid=False, color=colors)
+        axes_list[0][i].set_title(key, fontsize=9)
 
-    custom_lines = [Line2D([0], [0], color=color, lw=4) for color in colors_dict.values()]
+        max_value = max(dataframes[key].max(axis=1))
+        if key == "randombytes":
+            not_max_value = min(dataframes[key].apply(lambda row: row.nlargest(2).values[-1], axis=1))
+        else:
+            not_max_value = max(dataframes[key].apply(lambda row: row.nlargest(2).values[-1], axis=1))
+        axes_list[0][i].spines.bottom.set_visible(False)
+        axes_list[0][i].set_ylim(max_value * 0.7, max_value * 1.02)  # outliers only
+        axes_list[0][i].xaxis.tick_top()
+        axes_list[0][i].tick_params(labeltop=False)  # don't put tick labels at the top
+
+        axes_list[1][i].set_ylim(0, not_max_value * 1.08)  # most of the data
+        axes_list[1][i].spines.top.set_visible(False)
+        axes_list[1][i].xaxis.tick_bottom()
 
     figure.suptitle("", fontsize=10)
+    custom_lines = [Line2D([0], [0], color=color, lw=4) for color in colors_dict.values()]
     figure.legend(custom_lines, [label.replace(",", " ") for label in colors_dict.keys()], bbox_to_anchor=(.5, 1),
                   loc="upper center", fontsize=7, ncol=len(colors_dict.keys()))
 
@@ -192,6 +209,4 @@ class MicroGraph(Graph):
             region_dict[region] = pandas.DataFrame(temp, index=stage_names, columns=group_names)\
                 .replace(0, numpy.nan).dropna(how='all').dropna(axis=1, how="all")
 
-        for key in region_dict:
-            print(region_dict[key])
         plot_clustered_stacked(plot, region_dict)
