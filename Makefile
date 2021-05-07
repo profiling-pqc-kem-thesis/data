@@ -33,6 +33,8 @@ cache-misses-table:
 	python3 -m visualization.main all -d data.sqlite --verbose -n cache-misses-table -o build
 cpu-cycles-table:
 	python3 -m visualization.main all -d data.sqlite --verbose -n cpu-cycles-table -o build
+page-faults-table:
+	python3 -m visualization.main all -d data.sqlite --verbose -n page-faults-table -o build
 
 clean:
 	$(MAKE) -C ntru/hot-paths clean
