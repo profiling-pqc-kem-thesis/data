@@ -71,6 +71,39 @@ class MicroGraph(Graph):
         parser.add_argument("--event", required=True, type=str,
                             help="The event to use")
 
+    @staticmethod
+    def fetch_all_inputs(cursor: sqlite3.Cursor) -> List[Dict[str, Any]]:
+        cursor.execute("""
+        SELECT
+            algorithm.name,
+            algorithm.parameters,
+            environment.name,
+            microBenchmarkEvent.event
+        FROM
+            algorithm
+            INNER JOIN benchmark ON benchmark.algorithm = algorithm.id
+            INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+            INNER JOIN environment ON environment.id = benchmarkRun.environment
+            INNER JOIN microBenchmark ON microBenchmark.benchmark = benchmark.id
+            INNER JOIN microBenchmarkMeasurement ON microBenchmarkMeasurement.microBenchmark = microBenchmark.id
+            INNER JOIN microBenchmarkEvent ON microBenchmarkEvent.microBenchmarkMeasurement = microBenchmarkMeasurement.id
+        WHERE
+            microBenchmarkEvent.value >= 0
+            AND microBenchmarkMeasurement.region NOT IN("crypto_kem_keypair", "crypto_kem_enc", "crypto_kem_dec")
+            AND microBenchmarkEvent.event = "cpu-cycles"
+        GROUP BY
+            algorithm.name,
+            algorithm.parameters,
+            environment.name,
+            microBenchmarkEvent.event
+        """)
+        keys = ["algorithm_name", "algorithm_parameters", "environment", "event"]
+        rows = cursor.fetchall()
+        inputs = []
+        for row in rows:
+            inputs.append({keys[i]: value for i, value in enumerate(row)})
+        return inputs
+
     def fetch_data(self, cursor: sqlite3.Cursor) -> Any:
         parameters = (
             self.options.algorithm_name, self.options.algorithm_parameters, self.options.environment,
