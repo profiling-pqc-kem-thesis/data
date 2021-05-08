@@ -134,8 +134,7 @@ class SequentialRunsGraph(Graph):
     plot.title("")
     plot.ylabel("Speedup")
     plot.xlabel("Iteration")
-    plot.legend(title="Compilers", bbox_to_anchor=(
-        1.05, 1), loc="upper left", fontsize=8)
+    plot.legend(bbox_to_anchor=(0.5, 1.05), loc="lower center", fontsize=8, ncol=len(series))
 
 
 class SequentialRunsTable(Table):
@@ -371,4 +370,3 @@ class SequentialTable(Table):
       \\end{{tabularx}}
   \\end{{table}}
   """.format(self.options.algorithm_name, self.options.algorithm_parameters, "\n            ".join(rows))
-
