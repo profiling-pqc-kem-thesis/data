@@ -20,6 +20,9 @@ def calculate_confidence_interval(data, confidence=0.95):
 
 def plot_clustered_stacked(plot, dataframes: Dict[str, Any]):
     matplotlib.rcParams.update({'figure.autolayout': True})
+    matplotlib.rcParams['xtick.labelsize'] = 8
+    matplotlib.rcParams['ytick.labelsize'] = 8
+
 
     colors_dict = {"gcc,ref": "#e6194B",
                    "gcc,ref-optimized": "#3cb44b",
@@ -35,11 +38,7 @@ def plot_clustered_stacked(plot, dataframes: Dict[str, Any]):
 
     figure, axes_list = plot.subplots(2, number_of_dataframes, gridspec_kw={'width_ratios': width_ratios})
     figure_width, figure_height = figure.get_size_inches()
-    figure.set_size_inches(figure_width * 3, figure_height * 2)
-
-    d = .5  # proportion of vertical to horizontal extent of the slanted line
-    #kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
-    #              linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+    figure.set_size_inches(figure_width * 1.5, figure_height)
 
     for i, key in enumerate(dataframes):
         colors = []
@@ -47,7 +46,10 @@ def plot_clustered_stacked(plot, dataframes: Dict[str, Any]):
             colors.append(colors_dict[column])
         dataframes[key].plot(kind="bar", linewidth=0, stacked=False, ax=axes_list[0][i], legend=False, grid=False, color=colors)
         dataframes[key].plot(kind="bar", linewidth=0, stacked=False, ax=axes_list[1][i], legend=False, grid=False, color=colors)
-        axes_list[0][i].set_title(key, fontsize=9)
+        if key == "poly_R2_inv_to_Rq_inv":
+            axes_list[0][i].set_title(key + "\n\n", fontsize=9)
+        else:
+            axes_list[0][i].set_title(key + "\n", fontsize=9)
 
         max_value = max(dataframes[key].max(axis=1))
         if key == "randombytes":
@@ -56,17 +58,16 @@ def plot_clustered_stacked(plot, dataframes: Dict[str, Any]):
             not_max_value = max(dataframes[key].apply(lambda row: row.nlargest(2).values[-1], axis=1))
         axes_list[0][i].spines.bottom.set_visible(False)
         axes_list[0][i].set_ylim(max_value * 0.7, max_value * 1.02)  # outliers only
-        axes_list[0][i].xaxis.tick_top()
-        axes_list[0][i].tick_params(labeltop=False)  # don't put tick labels at the top
+        axes_list[0][i].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False, labeltop=False)
 
         axes_list[1][i].set_ylim(0, not_max_value * 1.08)  # most of the data
         axes_list[1][i].spines.top.set_visible(False)
         axes_list[1][i].xaxis.tick_bottom()
 
-    figure.suptitle("", fontsize=10)
+    figure.suptitle("", fontsize=13)
     custom_lines = [Line2D([0], [0], color=color, lw=4) for color in colors_dict.values()]
-    figure.legend(custom_lines, [label.replace(",", " ") for label in colors_dict.keys()], bbox_to_anchor=(.5, 1),
-                  loc="upper center", fontsize=7, ncol=len(colors_dict.keys()))
+    figure.legend(custom_lines, [label.replace(",", " ") for label in colors_dict.keys()], bbox_to_anchor=(.5, 1.02),
+                  loc="upper center", fontsize=8, ncol=len(colors_dict.keys()))
 
     return figure
 
