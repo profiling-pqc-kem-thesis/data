@@ -95,9 +95,9 @@ class CacheMissesTable(Table):
         series[label] = []
       series[label].append(row[3])
     values = list(series.values())
-    values.sort(key=lambda x: numpy.std(x), reverse=True)
+    values.sort(key=lambda x: numpy.mean(x), reverse=True)
     keys = list(series.keys())
-    keys.sort(key=lambda x: numpy.std(series[x]), reverse=True)
+    keys.sort(key=lambda x: numpy.mean(series[x]), reverse=True)
     rows = []
     for i in range(len(keys)):
       key = keys[i]
